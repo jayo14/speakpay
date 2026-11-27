@@ -11,7 +11,17 @@ import {
 
 import { HttpError } from "./http";
 import { connection, programId } from "./solana";
-import { withTimeout } from "./timeout";
+import { TimeoutError, withTimeout } from "./timeout";
+
+/** RPC failures become a clear 502 instead of a generic 500. */
+async function rpc<T>(p: Promise<T>, label: string): Promise<T> {
+  try {
+    return await withTimeout(p, 8_000, label);
+  } catch (e) {
+    if (e instanceof TimeoutError || e instanceof HttpError) throw e;
+    throw new HttpError(502, "RPC_UNAVAILABLE", `Solana RPC request failed (${label})`);
+  }
+}
 
 export function vaultAccounts(owner: PublicKey): VaultAccounts {
   const pid = programId();
@@ -49,9 +59,8 @@ function toState(accounts: VaultAccounts, data: Uint8Array): VaultState {
 /** Reads PolicyVault + VaultFunds from chain — the source of truth. */
 export async function readVaultByOwner(owner: PublicKey): Promise<LiveVault> {
   const accounts = vaultAccounts(owner);
-  const [vaultInfo, funds] = await withTimeout(
+  const [vaultInfo, funds] = await rpc(
     connection().getMultipleAccountsInfo([accounts.policyVault, accounts.vaultFunds]),
-    8_000,
     "vault read",
   );
   if (vaultInfo && !vaultInfo.owner.equals(accounts.programId)) {
@@ -66,7 +75,7 @@ export async function readVaultByOwner(owner: PublicKey): Promise<LiveVault> {
 
 /** Same as readVaultByOwner but starting from the vault PDA (voice / rogue routes). */
 export async function readVaultByPda(vaultPda: PublicKey): Promise<LiveVault & { vault: VaultState }> {
-  const info = await withTimeout(connection().getAccountInfo(vaultPda), 8_000, "vault read");
+  const info = await rpc(connection().getAccountInfo(vaultPda), "vault read");
   if (!info) throw new HttpError(404, "VAULT_NOT_FOUND", "No PolicyVault exists at this address on Devnet");
   if (!info.owner.equals(programId())) throw new HttpError(400, "NOT_A_VAULT", "Account is not a policy_vault PolicyVault");
   const owner = new PublicKey(decodePolicyVault(info.data).owner);

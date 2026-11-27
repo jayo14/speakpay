@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { MissingEnvError } from "./env";
+import { TimeoutError } from "./timeout";
 
 /** PRD §6 error envelope. Policy outcomes are NOT errors — they return 200 with a status. */
 export class HttpError extends Error {
@@ -29,6 +30,9 @@ export function errorResponse(e: unknown): NextResponse<ApiError> {
   if (e instanceof MissingEnvError) {
     // Name of the variable only, never a value.
     return NextResponse.json({ error: { code: "SERVER_MISCONFIGURED", message: e.message } }, { status: 500 });
+  }
+  if (e instanceof TimeoutError) {
+    return NextResponse.json({ error: { code: "UPSTREAM_TIMEOUT", message: e.message } }, { status: 504 });
   }
   console.error(e);
   return NextResponse.json({ error: { code: "INTERNAL", message: "Unexpected server error" } }, { status: 500 });
