@@ -590,3 +590,156 @@ Clients subscribe with the **anon** key to `postgres_changes` `INSERT` on
 writes. Rows contain no secrets and no PII beyond public keys and voice transcripts;
 the app shows a one-line notice that transcripts are stored publicly for the demo.
 
+---
+
+## 8. Screen Specifications
+
+### 8.1 Visual System (both clients)
+
+Swiss / monochrome. Background `#FFFFFF`, ink `#0A0A0A`, hairlines `#E5E5E5`,
+one signal colour per state only: PASSED `#0A7D32`, BLOCKED/REJECTED `#C21807`,
+FROZEN `#1F4FD1`, pending = ink at 50 %. Type: Inter (or system sans), numbers in
+a monospace (JetBrains Mono / system mono). 8-pt grid, 1 px borders, no gradients,
+no shadows, no illustrations. Every amount shown in SOL **and** lamports-on-tap.
+Every signature/pubkey is truncated `AbCd…WxYz` and tappable to Explorer.
+No landing page: app boots into §8.2 Screen 1 (or Screen 2 if a vault exists).
+
+### 8.2 Mobile (apps/mobile) — 3 screens, bottom tab bar
+
+**Screen 1 — Vault** (`app/(tabs)/vault.tsx`)
+- Not connected: single *Connect Wallet* button (MWA `transact` → `authorize`, cluster `solana:devnet`).
+- Connected, no vault: form prefilled with demo constants (max per tx, daily cap,
+  cooldown, allowlist = clean merchant wallet) → *Create Vault* (one MWA approval).
+- Vault exists: card with PDA (copy), VaultFunds balance, `daily_spent / daily_cap`
+  bar, cooldown countdown, frozen badge, delegate pubkey. Actions: *Deposit*,
+  *Edit Policy*, *Freeze / Unfreeze*, *Withdraw All*. Each = `POST /api/tx/owner` →
+  MWA `signAndSendTransactions` → `POST /api/vault/sync`.
+- State source: `GET /api/vault/[owner]` on focus + after every tx.
+
+**Screen 2 — Voice Console** (`app/(tabs)/console.tsx`, default tab once vault exists)
+- Large hold-to-talk button (press-in = start recording, release = stop & upload).
+  Max 15 s; < 0.7 s = discarded with "Hold to speak".
+- Pipeline stepper: `Listening → Transcribing → Verifying page → Checking policy → On-chain → Done`.
+- Result card: transcript, merchant/plan/price, verdict chip, evidence hash
+  (short) + *Verify* (calls `/api/audit/verify/[id]` → ✅/❌), Explorer link.
+- Auto-plays `tts_audio_base64`.
+- If `next_action === "sign_freeze"`: immediately open MWA for `toggle_freeze(true)`,
+  then `POST /api/audit/freeze`, then play its TTS.
+- Two secondary buttons (clearly labelled *Security Test*): *Simulate Rogue Agent
+  — 0.5 SOL* and *— 0.01 SOL*.
+
+**Screen 3 — Audit Feed** (`app/(tabs)/feed.tsx`)
+- Initial `select` of last 50 `audit_runs` for the vault, then Realtime INSERTs prepend.
+- Row: status chip, time, kind, amount, short hash, short signature. Tap → detail
+  with full scraped JSON, preimage fields, verify button.
+
+### 8.3 Web Companion (`apps/web/app/dashboard/page.tsx`) — single page
+
+Left column: Wallet Adapter connect (Phantom/Solflare browser extension, Devnet),
+vault card + owner actions (same `/api/tx/owner` flow, signed with `sendTransaction`).
+Centre: Voice Console using browser `MediaRecorder` (`audio/webm`) → same
+`/api/voice-command`; rogue buttons. Right: live Audit Feed (Realtime).
+Read-only mode: `/dashboard?vault=<pda>` shows the feed without a wallet — used
+on the second screen during the demo to show phone actions landing live.
+
+### 8.4 Merchant pages
+
+Plain e-commerce look, no SpeakPay branding except the footer fixture notice.
+`/merchants/clean`: vendor header, one plan card (name, price `0.02 SOL / month`,
+pay-to wallet in monospace), terms paragraph.
+`/merchants/shady`: same layout, "Mega Discount Plan 0.01 SOL", fine-print
+paragraph containing the injection text (§5.4).
+
+---
+
+## 9. Engineering Decisions & Trade-Offs Log
+
+| # | Decision | Alternatives rejected | Why | Cost accepted |
+|---|---|---|---|---|
+| D1 | **Native SOL in a system-owned PDA** | SPL USDC with ATAs | No ATA creation, mint, or token-program edge cases; `invoke_signed` CPI still proves PDA custody. | Pitch says "SOL/USDC rails"; USDC is roadmap, not demo. |
+| D2 | **Full PDA schema locked in Stage 1** (incl. allowlist, evidence hash, freeze) | Minimal struct, grow later | Account size changes force redeploy + vault re-init + IDL churn across 3 clients mid-sprint. Unused fields cost a few bytes. | Slightly larger Stage 1 test matrix. |
+| D3 | **Owner/delegate key split** | Owner signs every payment | Autonomy is the product; on-chain limits are only meaningful if something other than the owner can sign. | One server-held hot key (bounded by policy; see threat model §3.2). |
+| D4 | **REST STT + TTS, push-to-talk** | ElevenLabs Conversational AI / WebRTC full duplex | RN audio-session + WebRTC bugs are the #1 time sink; push-to-talk is deterministic and still uses STT + TTS deeply. | Not "conversational"; ~2–5 s turn latency. |
+| D5 | **One Next.js app = API + web fallback + merchant pages** | Separate Express API, separate static host | One deploy, one env, one domain; Firecrawl hits a real HTTPS origin we control; zero duplicated business logic. | Vercel function time limit (set `maxDuration = 60`). |
+| D6 | **Controlled merchant pages** | Scrape real vendors | Real sites throw bot walls, change copy, or go down mid-demo; injecting real third-party sites would be unethical. Pages are real, live, public HTTPS — not mocks. | Judges must accept self-hosted fixtures (explained in README). |
+| D7 | **Server builds unsigned owner txs** (`/api/tx/owner`) | Anchor client inside RN | Avoids bundling Anchor + polyfill issues in Hermes; one instruction encoder for web and mobile; wallet still signs (MWA `signAndSendTransactions`). | Extra round-trip per owner action; blockhash must be used within ~60 s. |
+| D8 | **Deterministic intent grammar, LLM fallback on transcript only** | LLM parses everything incl. page content | Fewer moving parts, zero injection surface from web content, works without an LLM key. | Narrow command vocabulary (fine: single wedge). |
+| D9 | **Rogue sim uses `skipPreflight: true`** | Let RPC simulation reject | A preflight rejection never lands on-chain → no Explorer proof. Skipping preflight makes the validator execute and record the failed tx with `PolicyError`. | Delegate pays a real fee (~5000 lamports) per rogue test. |
+| D10 | **Fixed check order in `execute_guarded_transfer`** | Any order | Deterministic error codes for the demo and tests. | None. |
+| D11 | **Supabase public-read RLS, service-role writes** | Auth per wallet | Wallet pubkey = identity; no auth UI; audit transparency is a feature. | Transcripts are public — disclosed in-app. |
+| D12 | **Audio library: whatever the scaffold's Expo SDK supports** — `expo-audio` (SDK ≥ 53) preferred, `expo-av` only if the template pins an SDK where it still ships | Hard-require `expo-av` | `expo-av` is deprecated and removed in recent SDKs; fighting the template wastes hours. Both record m4a and play base64 MP3 data URIs. | Builder B confirms at Hour 1 and records the choice in `AGENTS.md` §Decisions. |
+| D13 | **One shared delegate keypair** for all vaults | Per-vault delegates | Simplest ops; each vault binds the delegate pubkey at init and the owner can rotate it via `update_policy`. | A leaked delegate key affects all vaults — each still bounded by its own policy and freeze. |
+| D14 | **`maxAge: 0` on Firecrawl** | Default cache | Proves every scrape is live; avoids a cached pre-fixture result masking the 403. | Each scrape is a full fetch (2–4 s). |
+
+### 9.1 Failure Modes & Fallbacks
+
+| Failure | Detection | Fallback (still zero-mock) |
+|---|---|---|
+| Phantom MWA intent hangs on Android | No `authorize` result in 20 s | Solflare Mobile (installed as backup); same MWA code path. |
+| Physical phone dies / USB issues on recording day | — | Web Companion `/dashboard` with browser Phantom — same program, API, feed. Mention in video only if used. |
+| Public Devnet RPC 429 / slow | `health.rpc_ok=false`, latency > 5 s | Switch `SOLANA_RPC_URL` to dedicated Devnet RPC (env only). |
+| Devnet faucet dry | Faucet error | Pre-fund Friday; use `solana airdrop` from CLI; alternate faucets; reuse leftover SOL across wallets. |
+| Firecrawl stops returning 403 on `/shady` | Pre-demo re-check | Strengthen injection wording/placement; re-verify 10/10. Never fake the 403. |
+| Firecrawl latency spike | `timings_ms.scrape > 10 s` | Retry once; demo take is re-recorded, not edited to hide it. |
+| ElevenLabs STT mishears | Wrong intent | Keyterms; re-record take; UI shows transcript so the miss is visible, not hidden. |
+| ElevenLabs model ID renamed / unavailable | 4xx `model` error | Change `ELEVENLABS_STT_MODEL_ID` / `ELEVENLABS_TTS_MODEL_ID` to the current GA model; no code change. |
+| Vercel function timeout | 504 | `maxDuration = 60`; STT 15 s, scrape 20 s, chain 15 s budgets. |
+| `CooldownActive` / `ExceedsDailyCap` during takes | Error code | Pre-demo reset checklist (§2); fresh owner wallet = fresh vault. |
+| EAS cloud build queue long | Build pending > 30 min | Local `./gradlew assembleRelease` via `npx expo prebuild` + `expo run:android --variant release`. |
+
+---
+
+## 10. Scope Boundary
+
+### 10.1 Stage 1 — Core Functional MVP (gate: all items live-verified)
+
+1. `policy_vault` program with **all 6 instructions, full PDA schema, all errors**,
+   tests green, deployed to Devnet, IDL in `packages/shared`.
+2. Android APK (custom dev build) connects burner Phantom on Devnet via MWA,
+   creates the vault, deposits, and shows live PDA state. Web dashboard does the same.
+3. Voice pay path end-to-end on `/merchants/clean`: STT → grammar intent →
+   Firecrawl `/v2/scrape` (with `checkPromptInjection: true` already on) →
+   prechecks → evidence hash → delegate `execute_guarded_transfer` → Supabase
+   `audit_runs` + Realtime on phone **and** web → TTS confirmation + Explorer link.
+
+> Stage 1 already sends a real `evidence_hash` (the instruction requires 32 bytes);
+> Stage 2 adds the *verification UX* on top. No contract change between stages.
+
+### 10.2 Stage 2 — The 4 Winning Tweaks (only after Stage 1 gate passes)
+
+| Tweak | Deliverable | Gate |
+|---|---|---|
+| T1 Owner vs. delegate + rogue proof | `/api/simulate-rogue`, two rogue buttons, `ONCHAIN_REJECTED` rows with Explorer link to the failed tx | Explorer shows failed tx with `ExceedsMaxPerTx` (6001). |
+| T2 Injection defense | `/merchants/shady` live, 403 path, `INJECTION_BLOCKED` row, TTS warning | 10/10 scrapes return 403. |
+| T3 Evidence hash verification | `/api/audit/verify/[id]`, ✅ badge on phone + web, preimage shown in row detail | Recomputed hash == `ExecutionAudited.evidence_hash` == account `last_evidence_hash` for latest tx. |
+| T4 Voice kill switch | Freeze grammar, `next_action: "sign_freeze"`, `/api/audit/freeze`, TTS | Post-freeze rogue 0.01 SOL fails with `VaultFrozen` (6000) on Explorer. |
+
+### 10.3 Non-Goals (do not build — reject PRs that add these)
+
+- DEX / Jupiter swaps, SPL/USDC transfers, any token other than native SOL.
+- Expo Go support, iOS build, web-wrapper APK.
+- WebRTC / full-duplex voice agents, wake words, streaming STT.
+- Firecrawl `/crawl`, `/extract`, `/agent`, `/map`, or multi-page browsing in the demo path.
+- Scraping arbitrary user-spoken URLs or third-party live merchants.
+- Multi-agent orchestration, fine-tuning, RAG, memory.
+- Landing/marketing page, email/social auth, user accounts beyond wallet pubkey.
+- Mainnet deployment, real funds, program upgrades authority hand-off, audits.
+- Seeded/fake audit history, placeholder balances, hardcoded signatures (Zero-Mock — `AGENTS.md` §3).
+- Recurring scheduler / cron payments (roadmap — the wedge is demonstrated by voice-triggered runs).
+
+### 10.4 Known Limitations (state honestly in README)
+
+- `POST /api/voice-command` trusts `vault_pda` from the client; anyone who knows a
+  vault address can trigger compliant payments to allowlisted recipients within its
+  policy. Mitigation is the policy itself; Stage-3 roadmap: MWA `signMessages`
+  session auth.
+- The delegate key is a server hot key (bounded by D3/D13).
+- Merchant pages are self-hosted fixtures (D6).
+
+---
+
+## 11. Roadmap (pitch only, not built)
+
+USDC (SPL) vaults · scheduled recurring payouts · per-merchant sub-limits ·
+signed merchant price attestations · multi-sig owner · Seeker Seed Vault
+integration · Naira on/off-ramp partners for the Nigerian SME wedge.
