@@ -1,0 +1,36 @@
+/* Swiss / monochrome tokens — PRD §8.1. No gradients, no shadows. */
+:root {
+  --bg: #ffffff;
+  --ink: #0a0a0a;
+  --ink-muted: rgba(10, 10, 10, 0.5);
+  --line: #e5e5e5;
+  --pass: #0a7d32;
+  --block: #c21807;
+  --frozen: #1f4fd1;
+  --space: 8px;
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+a { color: inherit; }
+
+.mono { font-family: var(--font-mono); }
+
+.shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: calc(var(--space) * 4) calc(var(--space) * 2);
+}
+
+.rule { border: 0; border-top: 1px solid var(--line); margin: calc(var(--space) * 3) 0; }
