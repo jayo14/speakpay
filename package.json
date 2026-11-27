@@ -24,7 +24,8 @@
     "g1:smoke": "node scripts/g1-smoke.mjs",
     "firecrawl:check": "node scripts/firecrawl-injection-check.mjs",
     "stress:policy": "node apps/web/scripts/stress-policy.mjs",
-    "readme:map": "node scripts/readme-map.mjs"
+    "readme:map": "node scripts/readme-map.mjs",
+    "diagram": "node scripts/gen-architecture.mjs"
   },
   "devDependencies": {
     "typescript": "~5.9.3"

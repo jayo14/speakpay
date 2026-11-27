@@ -46,7 +46,9 @@ Phone (Expo APK, MWA) ──hold to talk──► Next.js API on Vercel
                                           7. ElevenLabs TTS verdict                          (PDA vault)
 ```
 
-Full diagram: `docs/architecture.png` (added in Block 6). Spec: [`PRD.md`](./PRD.md).
+![SpeakPay architecture](docs/architecture.png)
+
+Editable source: [`docs/architecture.excalidraw`](docs/architecture.excalidraw) (open at excalidraw.com) · regenerate all formats with `pnpm diagram` · spec: [`PRD.md`](./PRD.md).
 
 ## Security model
 
