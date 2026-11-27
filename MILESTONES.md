@@ -116,6 +116,8 @@ Any new feature needs both builders to agree *and* is reverted at 22:00 if not g
 
 ### Block 6 — README, Diagram, Video · Sat 18:00–23:00 (5 h)
 
+Prepared assets: `docs/architecture.{excalidraw,svg,png}` (`pnpm diagram`), `docs/DEMO_SCRIPT.md` (timed shot list + take checklist), `docs/SUBMISSION.md` (track answers + thread), README draft with `pnpm readme:map`.
+
 | WAT | Builder A | Builder B |
 |---|---|---|
 | 18:00–21:00 | `README.md` Judge & Sponsor Verification Map (§4 template) with **exact file paths + line numbers** taken from the frozen commit; Explorer links (deploy, PASSED, ONCHAIN_REJECTED ×2, freeze); Firecrawl 403 log screenshot; sample `audit_runs` JSON whose hash matches on-chain. | Excalidraw diagram → `docs/architecture.excalidraw` + `docs/architecture.png`. Video script from PRD §2. Rehearse 3×. |

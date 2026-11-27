@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="1060" viewBox="0 0 1680 1060">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0a0a0a"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c21807"/></marker></defs>
+<rect width="1680" height="1060" fill="#ffffff"/>
+<rect x="40" y="140" width="380" height="240" fill="#fff" stroke="#bdbdbd" stroke-width="1.5"/>
+<text x="58" y="172" font-family="Inter, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="1" fill="#0a0a0a">ANDROID PHONE — Expo dev-build APK</text>
+<text x="58" y="204" font-family="Inter, Helvetica, Arial, sans-serif" font-size="15" fill="#0a0a0a" xml:space="preserve">Vault · Console · Feed tabs</text>
+<text x="58" y="228" font-family="Inter, Helvetica, Arial, sans-serif" font-size="15" fill="#0a0a0a" xml:space="preserve">hold-to-talk recording (expo-audio)</text>
+<text x="58" y="252" font-family="Inter, Helvetica, Arial, sans-serif" font-size="15" fill="#0a0a0a" xml:space="preserve">spoken verdict playback</text>
+<text x="58" y="276" font-family="Inter, Helvetica, Arial, sans-serif" font-size="15" fill="#0a0a0a" xml:space="preserve">live audit feed (Realtime)</text>
+<text x="58" y="300" font-family="Inter, Helvetica, Arial, sans-serif" font-size="15" fill="#0a0a0a" xml:space="preserve">demo-readiness checklist</text>
+<rect x="40" y="470" width="380" height="160" fill="#fff" stroke="#bdbdbd" stroke-width="1.5"/>
+<text x="58" y="502" font-family="Inter, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="1" fill="#0a0a0a">OWNER WALLET — Phantom / Solflare</text>
+<text x="58" y="534" font-family="Inter, Helvetica, Arial, sans-serif" font-size="15" fill="#0a0a0a" xml:space="preserve">Mobile Wallet Adapter (Android)</text>
+<text x="58" y="558" font-family="Inter, Helvetica, Arial, sans-serif" font-size="15" fill="#0a0a0a" xml:space="preserve">Wallet Adapter (web dashboard)</text>
+<text x="58" y="582" font-family="Inter, Helvetica, Arial, sans-serif" font-size="15" fill="#0a0a0a" xml:space="preserve">only key that can: create · deposit ·</text>
+<text x="58" y="606" font-family="Inter, Helvetica, Arial, sans-serif" font-size="15" fill="#0a0a0a" xml:space="preserve">change policy · freeze · withdraw</text>
+<rect x="40" y="720" width="380" height="140" fill="#fff" stroke="#bdbdbd" stroke-width="1.5"/>
+<text x="58" y="752" font-family="Inter, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="1" fill="#0a0a0a">WEB COMPANION — /dashboard</text>
+<text x="58" y="784" font-family="Inter, Helvetica, Arial, sans-serif" font-size="15" fill="#0a0a0a" xml:space="preserve">same API, program and feed</text>
+<text x="58" y="808" font-family="Inter, Helvetica, Arial, sans-serif" font-size="15" fill="#0a0a0a" xml:space="preserve">browser voice console</text>
+<text x="58" y="832" font-family="Inter, Helvetica, Arial, sans-serif" font-size="15" fill="#0a0a0a" xml:space="preserve">read-only ?vault= second screen</text>
+<rect x="520" y="140" width="520" height="530" fill="#fff" stroke="#bdbdbd" stroke-width="1.5"/>
+<text x="538" y="172" font-family="Inter, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="1" fill="#0a0a0a">VERCEL — Next.js API (apps/web)</text>
+<text x="538" y="204" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve">POST /api/voice-command</text>
+<text x="538" y="228" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve">1  ElevenLabs STT (Scribe)</text>
+<text x="538" y="252" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve">2  intent grammar — transcript only</text>
+<text x="538" y="276" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve">3  Firecrawl /v2/scrape</text>
+<text x="538" y="300" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve">   + checkPromptInjection: true</text>
+<text x="538" y="324" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#c21807" xml:space="preserve">   403 → INJECTION_BLOCKED · STOP</text>
+<text x="538" y="348" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve">4  off-chain prechecks (convenience)</text>
+<text x="538" y="372" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve">5  evidence_hash = SHA-256(preimage)</text>
+<text x="538" y="396" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve">6  agent_delegate signs</text>
+<text x="538" y="420" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve">   execute_guarded_transfer</text>
+<text x="538" y="444" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve">7  audit row → Supabase</text>
+<text x="538" y="468" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve">8  ElevenLabs TTS verdict</text>
+<text x="538" y="492" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve"></text>
+<text x="538" y="516" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve">/api/tx/owner   /api/vault/*</text>
+<text x="538" y="540" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve">/api/simulate-rogue   /api/audit/*</text>
+<rect x="520" y="770" width="520" height="110" fill="#fff" stroke="#bdbdbd" stroke-width="1.5"/>
+<text x="538" y="802" font-family="Inter, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="1" fill="#0a0a0a">MERCHANT FIXTURES — same deployment</text>
+<text x="538" y="834" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve">/merchants/clean   honest 0.02 SOL plan</text>
+<text x="538" y="858" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve">/merchants/shady   hidden injection payload</text>
+<rect x="1180" y="140" width="460" height="110" fill="#fff" stroke="#bdbdbd" stroke-width="1.5"/>
+<text x="1198" y="172" font-family="Inter, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="1" fill="#0a0a0a">ELEVENLABS</text>
+<text x="1198" y="204" font-family="Inter, Helvetica, Arial, sans-serif" font-size="15" fill="#0a0a0a" xml:space="preserve">STT scribe_v3 + crypto keyterms</text>
+<text x="1198" y="228" font-family="Inter, Helvetica, Arial, sans-serif" font-size="15" fill="#0a0a0a" xml:space="preserve">TTS eleven_flash_v2_5 → base64 MP3</text>
+<rect x="1180" y="280" width="460" height="110" fill="#fff" stroke="#bdbdbd" stroke-width="1.5"/>
+<text x="1198" y="312" font-family="Inter, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="1" fill="#0a0a0a">FIRECRAWL</text>
+<text x="1198" y="344" font-family="Inter, Helvetica, Arial, sans-serif" font-size="15" fill="#0a0a0a" xml:space="preserve">/v2/scrape · JSON schema extraction</text>
+<text x="1198" y="368" font-family="Inter, Helvetica, Arial, sans-serif" font-size="15" fill="#0a0a0a" xml:space="preserve">prompt-injection guard → HTTP 403</text>
+<rect x="1180" y="420" width="460" height="250" fill="#fff" stroke="#0a0a0a" stroke-width="3"/>
+<text x="1198" y="452" font-family="Inter, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="1" fill="#0a0a0a">SOLANA DEVNET — policy_vault (Anchor)</text>
+<text x="1198" y="484" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve">PolicyVault PDA [policy_vault, owner]</text>
+<text x="1198" y="508" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve">VaultFunds  PDA [vault_funds, vault]</text>
+<text x="1198" y="532" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve"></text>
+<text x="1198" y="556" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve">checks, in order:</text>
+<text x="1198" y="580" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve">frozen → max/tx → daily cap →</text>
+<text x="1198" y="604" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve">cooldown → allowlist → balance</text>
+<text x="1198" y="628" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve"></text>
+<text x="1198" y="652" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-size="14" fill="#0a0a0a" xml:space="preserve">emits ExecutionAudited(evidence_hash)</text>
+<rect x="1180" y="700" width="460" height="160" fill="#fff" stroke="#bdbdbd" stroke-width="1.5"/>
+<text x="1198" y="732" font-family="Inter, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="1" fill="#0a0a0a">SUPABASE</text>
+<text x="1198" y="764" font-family="Inter, Helvetica, Arial, sans-serif" font-size="15" fill="#0a0a0a" xml:space="preserve">Postgres: vault_profiles · audit_runs</text>
+<text x="1198" y="788" font-family="Inter, Helvetica, Arial, sans-serif" font-size="15" fill="#0a0a0a" xml:space="preserve">RLS: public read · service-role writes</text>
+<text x="1198" y="812" font-family="Inter, Helvetica, Arial, sans-serif" font-size="15" fill="#0a0a0a" xml:space="preserve">Realtime → phone + web feeds</text>
+<text x="1198" y="836" font-family="Inter, Helvetica, Arial, sans-serif" font-size="15" fill="#0a0a0a" xml:space="preserve">receipt preimage → recomputable hash</text>
+<polyline points="420,215 520,215" fill="none" stroke="#0a0a0a" stroke-width="1.5"  marker-end="url(#a)"/>
+<text x="440" y="205" font-family="Inter, Helvetica, Arial, sans-serif" font-size="12" fill="#6b6b6b">voice</text>
+<polyline points="520,265 420,265" fill="none" stroke="#0a0a0a" stroke-width="1.5"  marker-end="url(#a)"/>
+<text x="428" y="290" font-family="Inter, Helvetica, Arial, sans-serif" font-size="12" fill="#6b6b6b">verdict + TTS</text>
+<polyline points="230,380 230,470" fill="none" stroke="#0a0a0a" stroke-width="1.5"  marker-end="url(#a)"/>
+<text x="240" y="430" font-family="Inter, Helvetica, Arial, sans-serif" font-size="12" fill="#6b6b6b">owner tx to sign</text>
+<polyline points="420,600 480,600 480,715 1090,715 1090,560 1180,560" fill="none" stroke="#0a0a0a" stroke-width="1.5"  marker-end="url(#a)"/>
+<text x="600" y="707" font-family="Inter, Helvetica, Arial, sans-serif" font-size="12" fill="#6b6b6b">MWA signAndSendTransactions (owner)</text>
+<polyline points="1040,195 1180,195" fill="none" stroke="#0a0a0a" stroke-width="1.5"  marker-end="url(#a)"/>
+<text x="1048" y="185" font-family="Inter, Helvetica, Arial, sans-serif" font-size="12" fill="#6b6b6b">STT / TTS</text>
+<polyline points="1040,320 1180,320" fill="none" stroke="#0a0a0a" stroke-width="1.5"  marker-end="url(#a)"/>
+<text x="1048" y="310" font-family="Inter, Helvetica, Arial, sans-serif" font-size="12" fill="#6b6b6b">scrape URL</text>
+<polyline points="1180,360 1040,360" fill="none" stroke="#c21807" stroke-width="1.5" stroke-dasharray="6 5" marker-end="url(#r)"/>
+<text x="1048" y="350" font-family="Inter, Helvetica, Arial, sans-serif" font-size="12" fill="#c21807">403 injection</text>
+<polyline points="1180,380 1160,380 1160,825 1040,825" fill="none" stroke="#0a0a0a" stroke-width="1.5"  marker-end="url(#a)"/>
+<text x="1048" y="845" font-family="Inter, Helvetica, Arial, sans-serif" font-size="12" fill="#6b6b6b">fetch page</text>
+<polyline points="1040,520 1180,520" fill="none" stroke="#0a0a0a" stroke-width="1.5"  marker-end="url(#a)"/>
+<text x="1048" y="510" font-family="Inter, Helvetica, Arial, sans-serif" font-size="12" fill="#6b6b6b">delegate tx</text>
+<polyline points="1040,650 1060,650 1060,760 1180,760" fill="none" stroke="#0a0a0a" stroke-width="1.5"  marker-end="url(#a)"/>
+<text x="1066" y="752" font-family="Inter, Helvetica, Arial, sans-serif" font-size="12" fill="#6b6b6b">audit row</text>
+<polyline points="1410,860 1410,960 230,960 230,860" fill="none" stroke="#0a0a0a" stroke-width="1.5"  marker-end="url(#a)"/>
+<text x="560" y="952" font-family="Inter, Helvetica, Arial, sans-serif" font-size="12" fill="#6b6b6b">Realtime INSERTs → live feed (phone + web)</text>
+<text x="40" y="48" font-family="Inter, Helvetica, Arial, sans-serif" font-size="34" font-weight="800" fill="#0a0a0a">SpeakPay — architecture</text>
+<text x="40" y="84" font-family="Inter, Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#6b6b6b">Voice goal → verified live web evidence → payment enforced by the Solana validator · Devnet</text>
+<text x="40" y="1010" font-family="Inter, Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#6b6b6b">Threat model: assume the API, the LLM and the agent key are compromised — max loss = min(max_per_tx, daily cap left) per cooldown, only to allowlisted wallets, 0 once frozen.</text>
+</svg>
