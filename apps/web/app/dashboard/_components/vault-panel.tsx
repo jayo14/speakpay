@@ -5,6 +5,7 @@ import { DEMO_POLICY, explorerAddressUrl, explorerTxUrl, lamportsToSol, type Vau
 import { useEffect, useState } from "react";
 
 import s from "../dashboard.module.css";
+import { ReadinessCard } from "./readiness-card";
 import { short } from "./status-chip";
 import { useOwnerAction } from "./use-vault";
 
@@ -116,6 +117,7 @@ export function VaultPanel({
           PDA {short(v.vault_pda, 8)} ↗
         </a>
       </div>
+      <ReadinessCard data={data} />
       <button
         className={s.btn}
         disabled={action.busy}
