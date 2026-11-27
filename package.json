@@ -23,7 +23,8 @@
     "verify": "pnpm typecheck && pnpm lint && pnpm test:program && pnpm build:web",
     "g1:smoke": "node scripts/g1-smoke.mjs",
     "firecrawl:check": "node scripts/firecrawl-injection-check.mjs",
-    "stress:policy": "node apps/web/scripts/stress-policy.mjs"
+    "stress:policy": "node apps/web/scripts/stress-policy.mjs",
+    "readme:map": "node scripts/readme-map.mjs"
   },
   "devDependencies": {
     "typescript": "~5.9.3"
