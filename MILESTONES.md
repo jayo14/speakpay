@@ -30,7 +30,7 @@ Both may edit `PRD.md`/`MILESTONES.md` checkboxes. This split is why there are n
 | ID | Due (WAT) | From → To | Artifact | Until it lands, B works against… |
 |---|---|---|---|---|
 | **H0** | Fri 17:00 | A → B | `pnpm-workspace.yaml`, empty `packages/shared` with `constants.ts` (seeds, demo limits, error map, `RunStatus`) and `api-types.ts` copied verbatim from PRD §6 | PRD §4/§6 text (identical) |
-| **H1** | Fri 22:00 | A → B | Program deployed on Devnet; `POLICY_VAULT_PROGRAM_ID` filled; `packages/shared/src/idl/policy_vault.{json,ts}`; `pda.ts` | H0 types; MWA connect + `signMessages` only |
+| **H1** | Fri 22:00 | A → B | Program deployed on Devnet; Program ID in `Anchor.toml`, `declare_id!` and both `*_POLICY_VAULT_PROGRAM_ID` env vars; `packages/shared/src/idl/policy_vault.{json,ts}`; `pda.ts` | H0 types; MWA connect + `signMessages` only |
 | **H2** | Sat 00:00 | A → B | Vercel **preview** URL with `/api/health`, `/api/tx/owner`, `/api/vault/[owner]`, `/api/vault/sync` live on Devnet | Building Vault UI; MWA `signAndSendTransactions` wiring |
 | **H3** | Sat 00:00 | A → B | Supabase migration applied; anon URL/key in shared secret store; Realtime enabled on `audit_runs` | Feed UI against empty table (real, just empty) |
 | **H4** | Sat 04:00 | A → B | `/api/voice-command` live on preview, clean path PASSED via curl | Recording + upload UI; local playback of own recording |

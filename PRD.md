@@ -195,8 +195,9 @@ speakpay/
 │   ├── app/dashboard/page.tsx      # Web Companion fallback
 │   ├── app/merchants/clean/page.tsx
 │   ├── app/merchants/shady/page.tsx
-│   └── lib/                        # elevenlabs.ts firecrawl.ts intent.ts evidence.ts
-│                                   # solana.ts supabase-server.ts tts-copy.ts
+│   └── lib/                        # elevenlabs.ts firecrawl.ts intent.ts solana.ts
+│                                   # supabase-server.ts tts-copy.ts
+│                                   # (evidence hash lives in packages/shared/src/evidence.ts)
 ├── apps/mobile/                    # Expo custom dev build (create-solana-dapp, Solana Mobile template)
 │   ├── app/                        # screens: vault, console, feed
 │   └── src/                        # mwa.ts api.ts supabase.ts audio.ts
@@ -221,7 +222,8 @@ Dependent artifacts if changed: `programs/policy-vault/src/lib.rs`, `tests/*`,
 - **Program name / crate:** `policy_vault` (directory `programs/policy-vault`).
 - **Cluster:** Solana Devnet. **Program ID:** generated at first `anchor build`
   (`anchor keys sync`), then committed in `Anchor.toml`, `declare_id!`, and
-  `POLICY_VAULT_PROGRAM_ID` env vars. The program keypair file is **never committed**.
+  `NEXT_PUBLIC_POLICY_VAULT_PROGRAM_ID` / `EXPO_PUBLIC_POLICY_VAULT_PROGRAM_ID`
+  (see `ENVIRONMENT.md` §1). The program keypair file is **never committed**.
 - **Asset:** native SOL (lamports) only.
 
 ### 4.1 Accounts
@@ -471,20 +473,20 @@ Web content (Firecrawl output) is **never** sent to any LLM by SpeakPay.
 Run after a 200 scrape, before hashing: all fields non-null; `recipient_wallet`
 parses as a base58 Pubkey; `price_sol > 0`; `price_sol ≤ max_price_sol` (if spoken);
 `amount_lamports = round(price_sol × 1e9)`; read PolicyVault from chain and,
-if `is_frozen`, return status `FROZEN`-style precheck (`PRECHECK_FAILED` /
-`VAULT_FROZEN_OFFCHAIN`) without submitting. *The rogue route deliberately
+if `is_frozen`, return `status: "PRECHECK_FAILED"`, `error_code: "VAULT_FROZEN_OFFCHAIN"`
+without submitting (the on-chain `VaultFrozen` proof is shown via the rogue route). *The rogue route deliberately
 skips all of this.*
 
 ### 6.4 Route Catalogue
 
 | Route | Request | Response (200) | Notes |
 |---|---|---|---|
-| `POST /api/voice-command` | `multipart`: `audio` (file), `vault_pda`, `owner_pubkey`, `client` (`"mobile"\|"web"`) | `VoiceCommandResponse` (§6.5) | Full orchestrator. `maxDuration = 60`. |
-| `POST /api/simulate-rogue` | JSON `{ vault_pda, amount_lamports }` | `{ run_id, status, tx_signature, explorer_url, error_code, error_number, logs: string[], speech_text, tts_audio_base64 }` | Delegate signs `execute_guarded_transfer` to `MERCHANT_CLEAN_WALLET` with `skipPreflight: true`, zero hash, no LLM, no prechecks. Gated by `ROGUE_SIM_ENABLED=true`. |
+| `POST /api/voice-command` | `multipart`: `audio` (file), `vault_pda`, `owner_pubkey`, `client` (`"mobile"\|"web"\|"api"`; `api` = curl/CLI tests) | `VoiceCommandResponse` (§6.5) | Full orchestrator. `maxDuration = 60`. |
+| `POST /api/simulate-rogue` | JSON `{ vault_pda, amount_lamports, client }` | `{ run_id, status, tx_signature, explorer_url, error_code, error_number, logs: string[], speech_text, tts_audio_base64 }` | Delegate signs `execute_guarded_transfer` to `MERCHANT_CLEAN_WALLET` with `skipPreflight: true`, zero hash, no LLM, no prechecks. Gated by `ROGUE_SIM_ENABLED=true`. |
 | `POST /api/tx/owner` | JSON `{ action: "init"\|"deposit"\|"update_policy"\|"toggle_freeze"\|"withdraw_all", owner_pubkey, params }` | `{ transaction_base64, recent_blockhash, last_valid_block_height }` | Builds an **unsigned** legacy/v0 tx with `feePayer = owner`. Clients sign+send (MWA `signAndSendTransactions` / Wallet Adapter `sendTransaction`). Server never sees owner keys. `init` params default `agent_delegate` to the server's delegate pubkey. |
 | `POST /api/vault/sync` | JSON `{ owner_pubkey, tx_signature }` | `{ vault: VaultState }` | Confirms the tx on-chain, re-reads PDA, upserts `vault_profiles`. |
 | `GET /api/vault/[owner]` | — | `{ vault: VaultState \| null, vault_funds_lamports, delegate_pubkey }` | Live chain read (source of truth). |
-| `POST /api/audit/freeze` | JSON `{ vault_pda, tx_signature, source_run_id? }` | `{ run_id, status: "FROZEN", speech_text, tts_audio_base64 }` | Verifies the tx succeeded and PDA `is_frozen == true` before inserting. |
+| `POST /api/audit/freeze` | JSON `{ vault_pda, tx_signature, client, parent_run_id? }` | `{ run_id, status: "FROZEN", speech_text, tts_audio_base64 }` | Verifies the tx succeeded and PDA `is_frozen == true` before inserting. |
 | `POST /api/tts` | JSON `{ text }` (≤ 200 chars) | `{ tts_audio_base64 }` | For client-side verdicts. |
 | `GET /api/audit/verify/[id]` | — | `{ match: boolean, recomputed_hash, onchain_hash, source: "event"\|"account" }` | Recomputes hash from the row's preimage fields; decodes `ExecutionAudited` from the tx's logs. |
 | `GET /api/health` | — | `{ ok, rpc_ok, program_deployed, delegate_balance_lamports, env_missing: string[] }` | Never returns secret values. |
@@ -554,6 +556,7 @@ create table public.audit_runs (
   vault_pda         text not null,
   client            text not null check (client in ('mobile','web','api')),
   kind              text not null check (kind in ('voice','rogue','freeze')),
+  parent_run_id     uuid references public.audit_runs(id),  -- freeze row → its FREEZE_REQUESTED voice row
   transcript        text,
   intent            jsonb,
   target_url        text,
@@ -597,14 +600,18 @@ the app shows a one-line notice that transcripts are stored publicly for the dem
 ### 8.1 Visual System (both clients)
 
 Swiss / monochrome. Background `#FFFFFF`, ink `#0A0A0A`, hairlines `#E5E5E5`,
-one signal colour per state only: PASSED `#0A7D32`, BLOCKED/REJECTED `#C21807`,
-FROZEN `#1F4FD1`, pending = ink at 50 %. Type: Inter (or system sans), numbers in
+one signal colour per state only: `PASSED` `#0A7D32`; `INJECTION_BLOCKED`,
+`ONCHAIN_REJECTED`, `PRECHECK_FAILED`, `ERROR` `#C21807`; `FROZEN` / `FREEZE_REQUESTED`
+`#1F4FD1`; in-flight = ink at 50 %. Type: Inter (or system sans), numbers in
 a monospace (JetBrains Mono / system mono). 8-pt grid, 1 px borders, no gradients,
 no shadows, no illustrations. Every amount shown in SOL **and** lamports-on-tap.
 Every signature/pubkey is truncated `AbCd…WxYz` and tappable to Explorer.
 No landing page: app boots into §8.2 Screen 1 (or Screen 2 if a vault exists).
 
 ### 8.2 Mobile (apps/mobile) — 3 screens, bottom tab bar
+
+File paths below assume expo-router tabs; if the `create-solana-dapp` template uses a
+different navigator, keep its structure and map these screens onto it (record in `AGENTS.md` §8).
 
 **Screen 1 — Vault** (`app/(tabs)/vault.tsx`)
 - Not connected: single *Connect Wallet* button (MWA `transact` → `authorize`, cluster `solana:devnet`).
