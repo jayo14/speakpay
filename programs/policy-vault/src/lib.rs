@@ -17,7 +17,7 @@ use events::*;
 use policy::{check_transfer, validate_policy, TransferPolicy, TransferRequest};
 use state::*;
 
-declare_id!("2ZgTwPCnLhXTwTNW8AZKoxuh6zy1NKgCTr3ekbch8YfU");
+declare_id!("BdaaSSmvhANBA14KdYadNvgnYLUnZwPFBSVmzbTV1orf");
 
 #[program]
 pub mod policy_vault {
