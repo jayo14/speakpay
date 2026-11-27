@@ -8,7 +8,7 @@ export function AccountFeatureSignMessage({ address }: { address: PublicKey }) {
   return (
     <AppActionButton
       onPress={async () => {
-        await signMessages(new TextEncoder().encode(`Signing a message with ${address.toString()}`))
+        await signMessages(new TextEncoder().encode(`SpeakPay owner check: ${address.toString()}`))
         return {
           description: `Signed a message with ${address.toString()}`,
           status: 'success',

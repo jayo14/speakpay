@@ -1,30 +1,62 @@
 import { StyleSheet } from 'react-native'
 
+// Swiss / monochrome tokens — PRD §8.1. No gradients, shadows or radii.
+export const colors = {
+  bg: '#FFFFFF',
+  ink: '#0A0A0A',
+  inkMuted: 'rgba(10, 10, 10, 0.5)',
+  line: '#E5E5E5',
+  pass: '#0A7D32',
+  block: '#C21807',
+  frozen: '#1F4FD1',
+} as const
+
+export const mono = 'monospace'
+const unit = 8
+
 export const appStyles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
-    borderColor: '#d1d1d1',
-    borderRadius: 2,
+    backgroundColor: colors.bg,
+    borderColor: colors.line,
     borderWidth: 1,
-    elevation: 1,
-    padding: 4,
+    gap: unit,
+    padding: unit * 2,
+  },
+  label: {
+    color: colors.inkMuted,
+    fontSize: 12,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  mono: {
+    color: colors.ink,
+    fontFamily: mono,
   },
   screen: {
+    backgroundColor: colors.bg,
     flex: 1,
-    gap: 16,
-    paddingHorizontal: 8,
+    gap: unit * 2,
+    paddingHorizontal: unit * 2,
+    paddingTop: unit * 2,
   },
   stack: {
-    gap: 8,
+    gap: unit,
+  },
+  text: {
+    color: colors.ink,
   },
   textDanger: {
-    color: '#b3261e',
+    color: colors.block,
+  },
+  textMuted: {
+    color: colors.inkMuted,
   },
   textSuccess: {
-    color: '#1b6b30',
+    color: colors.pass,
   },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    color: colors.ink,
+    fontSize: 28,
+    fontWeight: '700',
   },
 })

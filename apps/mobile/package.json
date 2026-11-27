@@ -1,65 +1,32 @@
 {
-  "name": "expo-web3js-minimal",
-  "displayName": "Expo Web3.js Minimal example",
-  "description": "A minimal template for building a Solana mobile app with Expo and React Native.",
-  "usecase": "Mobile",
-  "keywords": [
-    "expo",
-    "mobile-wallet-adapter",
-    "react-native",
-    "solana-web3js"
-  ],
-  "create-solana-dapp": {
-    "instructions": [
-      "Verify your Android development environment:",
-      "+npx -y solana-mobile@latest doctor",
-      "Build the Android app locally:",
-      "+{pm} run android"
-    ],
-    "rename": {
-      "Expo Web3js Minimal": {
-        "paths": [
-          "components"
-        ],
-        "to": "{{name}}"
-      }
-    },
-    "skills": [
-      "https://github.com/solana-foundation/solana-dev-skill",
-      "https://github.com/solana-mobile/solana-mobile-dev-skill"
-    ],
-    "versions": {
-      "adb": "33.0.0"
-    }
-  },
+  "name": "@speakpay/mobile",
+  "version": "0.1.0",
+  "private": true,
   "main": "./index.js",
-  "version": "1.0.0",
   "scripts": {
     "android": "expo run:android",
     "android:build": "expo prebuild -p android",
-    "build": "tsc --noEmit && npm run android:build",
-    "ci": "tsc --noEmit && npm run lint:check && npm run format:check && npm run android:build",
-    "dev": "expo start",
+    "dev": "expo start --dev-client",
     "doctor": "npx -y expo-doctor@latest",
+    "typecheck": "tsc --noEmit",
+    "lint": "expo lint",
+    "lint:fix": "expo lint --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "ios": "expo run:ios",
-    "lint": "expo lint --fix",
-    "lint:check": "expo lint",
-    "start": "expo start",
-    "web": "expo start --web"
+    "export:android": "expo export -p android"
   },
   "dependencies": {
     "@expo/metro-runtime": "~58.0.15",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-clipboard/clipboard": "^1.16.3",
     "@rn-primitives/dropdown-menu": "^1.5.2",
-    "@solana/spl-memo": "^0.3.1",
     "@solana/web3.js": "^1.99.0",
+    "@speakpay/shared": "workspace:*",
     "@tanstack/react-query": "^5.102.8",
     "@wallet-standard/core": "^1.1.2",
     "@wallet-ui/react-native-web3js": "^4.4.1",
     "expo": "~58.0.20",
+    "expo-audio": "~58.0.12",
     "expo-constants": "~58.0.13",
     "expo-dev-client": "~58.0.16",
     "expo-font": "~58.0.10",
@@ -92,6 +59,5 @@
     "eslint-config-expo": "~58.0.4",
     "prettier": "^3.9.6",
     "typescript": "~6.0.3"
-  },
-  "private": true
+  }
 }

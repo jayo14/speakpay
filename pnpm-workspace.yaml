@@ -1,3 +1,9 @@
 packages:
   - "apps/*"
   - "packages/*"
+
+# Optional native accelerators / binaries that work without install scripts.
+ignoredBuiltDependencies:
+  - bufferutil
+  - utf-8-validate
+  - esbuild
