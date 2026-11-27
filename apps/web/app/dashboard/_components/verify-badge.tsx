@@ -1,13 +1,15 @@
 "use client";
 
 import type { AuditVerifyResponse } from "@speakpay/shared";
+import { ShieldCheck, ShieldX } from "lucide-react";
 import { useState } from "react";
 
 import { apiGet, errorText } from "@/lib/client/api";
 
 import s from "../dashboard.module.css";
+import { TonePill } from "./status-chip";
 
-// T3: recompute the receipt hash server-side and compare it with the on-chain ExecutionAudited event.
+// T3: the server recomputes the receipt hash and compares it with the on-chain ExecutionAudited event.
 export function VerifyBadge({ runId }: { runId: string }) {
   const [res, setRes] = useState<AuditVerifyResponse | null>(null);
   const [busy, setBusy] = useState(false);
@@ -15,15 +17,16 @@ export function VerifyBadge({ runId }: { runId: string }) {
   if (!runId) return null;
   if (res) {
     return (
-      <span style={{ color: res.match ? "var(--pass)" : "var(--block)", fontWeight: 700 }} title={`on-chain ${res.onchain_hash}`}>
-        {res.match ? "✓ Evidence hash matches Solana" : "✗ Hash mismatch"} ({res.source})
-      </span>
+      <TonePill tone={res.match ? "paid" : "blocked"}>
+        {res.match ? <ShieldCheck size={15} strokeWidth={2} /> : <ShieldX size={15} strokeWidth={2} />}
+        {res.match ? "Verified on Solana" : "Hash mismatch"}
+      </TonePill>
     );
   }
   return (
-    <span>
+    <span className={s.stack}>
       <button
-        className={s.btnSecondary}
+        className={`${s.btnSecondary} ${s.btnSmall}`}
         disabled={busy}
         onClick={async () => {
           setBusy(true);
@@ -36,12 +39,12 @@ export function VerifyBadge({ runId }: { runId: string }) {
             setBusy(false);
           }
         }}
-        style={{ minHeight: 32 }}
         type="button"
       >
-        {busy ? "Verifying…" : "Verify evidence on-chain"}
+        <ShieldCheck size={16} strokeWidth={1.75} />
+        {busy ? "Checking Solana…" : "Verify on Solana"}
       </button>
-      {error ? <span className={s.danger}> {error}</span> : null}
+      {error ? <span className={`${s.danger} ${s.small}`}>{error}</span> : null}
     </span>
   );
 }

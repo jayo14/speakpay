@@ -1,21 +1,22 @@
-import type { RunStatus } from "@speakpay/shared";
+import { CircleCheck, ShieldX, Snowflake, TriangleAlert } from "lucide-react";
+import type { ReactNode } from "react";
+
+import type { Tone } from "@/lib/client/describe-run";
 
 import s from "../dashboard.module.css";
 
-const TONE: Record<RunStatus, string> = {
-  PASSED: "var(--pass)",
-  INJECTION_BLOCKED: "var(--block)",
-  ONCHAIN_REJECTED: "var(--block)",
-  PRECHECK_FAILED: "var(--block)",
-  ERROR: "var(--block)",
-  FROZEN: "var(--frozen)",
-  FREEZE_REQUESTED: "var(--frozen)",
-};
+export function TonePill({ tone, children }: { tone: Tone; children: ReactNode }) {
+  return <span className={`${s.status} ${s[`tone_${tone}`]}`}>{children}</span>;
+}
 
-export function StatusChip({ status }: { status: RunStatus }) {
+const ICON = { paid: CircleCheck, blocked: ShieldX, frozen: Snowflake, neutral: TriangleAlert } as const;
+
+/** Round tinted icon used in lists, receipts and the result card. */
+export function ToneIcon({ tone, size = 44 }: { tone: Tone; size?: number }) {
+  const Icon = ICON[tone];
   return (
-    <span className={s.chip} style={{ color: TONE[status] }}>
-      {status.replace(/_/g, " ")}
+    <span className={`${s.listIcon} ${s[`tone_${tone}`]}`} style={{ height: size, width: size }}>
+      <Icon aria-hidden size={size * 0.48} strokeWidth={1.75} />
     </span>
   );
 }

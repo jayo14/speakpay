@@ -1,85 +1,137 @@
 "use client";
 
 import { useWallet } from "@solana/wallet-adapter-react";
+import { CircleHelp, Mic, ReceiptText, Settings, Shield } from "lucide-react";
+import { useCallback, useState } from "react";
 
 import s from "../dashboard.module.css";
-import { AuditFeed } from "./audit-feed";
+import { ActivityView } from "./activity-view";
+import { ConnectCard } from "./connect-card";
+import { Logo } from "./logo";
+import { Avatar, SettingsDrawer } from "./settings-drawer";
+import { SpeakView } from "./speak-view";
+import { USERNAME_KEY, useLocalSetting } from "./use-local-setting";
 import { useVault } from "./use-vault";
-import { VaultPanel } from "./vault-panel";
-import { VoiceConsole } from "./voice-console";
-import { WalletConnect } from "./wallet-connect";
+import { VaultView } from "./vault-view";
 
-// Web Companion (PRD §8.3). Same program, API and Realtime feed as the APK.
-// `readOnlyVault` = /dashboard?vault=<pda>: feed only, no wallet (demo second screen).
-export function Dashboard({ readOnlyVault, demoAllowlist }: { readOnlyVault: string | null; demoAllowlist: string }) {
+export type Tab = "speak" | "activity" | "vault";
+
+// Same three sections, names and order on web and the Android app.
+const TABS: { id: Tab; label: string; Icon: typeof Mic }[] = [
+  { id: "speak", label: "Speak", Icon: Mic },
+  { id: "activity", label: "Activity", Icon: ReceiptText },
+  { id: "vault", label: "Vault", Icon: Shield },
+];
+
+export function Dashboard({
+  readOnlyVault,
+  demoAllowlist,
+  initialTab,
+}: {
+  readOnlyVault: string | null;
+  demoAllowlist: string;
+  initialTab: Tab;
+}) {
   const { publicKey } = useWallet();
   const owner = readOnlyVault ? null : (publicKey?.toBase58() ?? null);
   const vault = useVault(owner);
-  const vaultPda = readOnlyVault ?? vault.data?.vault?.vault_pda ?? null;
-  const fundsLamports = vault.data?.vault_funds_lamports ?? 0;
-  const step = !owner ? 1 : !vault.data?.vault || fundsLamports === 0 ? 2 : 3;
+  const [tab, setTabState] = useState<Tab>(initialTab);
+  const [drawer, setDrawer] = useState(false);
+  const [username] = useLocalSetting(USERNAME_KEY, "");
+
+  const setTab = useCallback((t: Tab) => {
+    setTabState(t);
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", t);
+    window.history.replaceState(null, "", url);
+  }, []);
+
+  // Read-only second screen for the demo: /dashboard?vault=<pda>
+  if (readOnlyVault) {
+    return (
+      <div className={s.main}>
+        <div className={s.content} style={{ paddingTop: 28 }}>
+          <div className={s.row}>
+            <Logo size={30} />
+            <span className={`${s.muted} ${s.small}`}>Live activity · read only · Devnet</span>
+          </div>
+          <ActivityView vaultPda={readOnlyVault} />
+        </div>
+      </div>
+    );
+  }
+
+  const data = vault.data;
+  const setupDone = !!data?.vault && (data.vault_funds_lamports > 0 || data.vault.tx_count > 0);
+
+  let body: React.ReactNode;
+  if (!owner) body = <ConnectCard />;
+  else if (!data) body = <p className={s.muted}>{vault.error ?? "Reading your vault from Solana…"}</p>;
+  else if (tab === "vault" || !setupDone) body = <VaultView data={data} demoAllowlist={demoAllowlist} onChanged={vault.refresh} />;
+  else if (tab === "activity") body = <ActivityView vaultPda={data.vault!.vault_pda} />;
+  else body = <SpeakView data={data} onGoToVault={() => setTab("vault")} onRun={vault.refresh} owner={owner} username={username} />;
+
+  const activeTab: Tab = owner && data && !setupDone ? "vault" : tab;
+  const showNav = !!owner;
 
   return (
-    <main className={s.page}>
-      <header className={s.header}>
-        <div>
-          <h1 className={s.brand}>SpeakPay</h1>
-          {!readOnlyVault ? (
-            <p className={s.muted}>Your Devnet wallet is your account — your vault and spending limits live on-chain.</p>
-          ) : null}
+    <div className={s.app}>
+      <aside className={s.sidebar}>
+        <div className={s.sidebarBrand}>
+          <Logo size={30} />
         </div>
-        <p className={s.sub}>
-          {readOnlyVault ? "Live audit feed — read only" : "Web companion"} · Solana Devnet
-        </p>
-      </header>
+        {showNav
+          ? TABS.map(({ id, label, Icon }) => (
+              <button
+                aria-current={activeTab === id ? "page" : undefined}
+                className={`${s.navItem} ${activeTab === id ? s.navItemActive : ""}`}
+                key={id}
+                onClick={() => setTab(id)}
+                type="button"
+              >
+                <Icon size={20} strokeWidth={1.75} />
+                {label}
+              </button>
+            ))
+          : null}
+        <div className={s.sidebarSpacer} />
+        <button className={s.navItem} onClick={() => setDrawer(true)} type="button">
+          <Settings size={20} strokeWidth={1.75} />
+          Profile &amp; settings
+        </button>
+        <a className={s.navItem} href="https://github.com/jayo14/speakpay#readme" rel="noreferrer" style={{ textDecoration: "none" }} target="_blank">
+          <CircleHelp size={20} strokeWidth={1.75} />
+          Help &amp; support
+        </a>
+      </aside>
 
-      {!readOnlyVault ? (
-        <nav aria-label="Setup steps" className={s.steps}>
-          <span className={`${s.step} ${step > 1 ? s.stepDone : s.stepActive}`}>
-            {step > 1 ? "✓ 1. Wallet connected" : "1. Connect Devnet wallet"}
-          </span>
-          <span className={`${s.step} ${step > 2 ? s.stepDone : step === 2 ? s.stepActive : ""}`}>
-            {step > 2 ? "✓ 2. Vault funded" : "2. Create & fund vault"}
-          </span>
-          <span className={`${s.step} ${step === 3 ? s.stepActive : ""}`}>
-            3. Hold mic & speak to pay
-          </span>
-        </nav>
-      ) : null}
+      <main className={s.main}>
+        <header className={s.topbar}>
+          <button aria-label="Profile and settings" className={s.avatar} onClick={() => setDrawer(true)} type="button">
+            <Avatar username={username} />
+          </button>
+          {showNav ? (
+            <nav aria-label="Sections" className={s.pills}>
+              {TABS.map(({ id, label }) => (
+                <button
+                  aria-current={activeTab === id ? "page" : undefined}
+                  className={`${s.pill} ${activeTab === id ? s.pillActive : ""}`}
+                  key={id}
+                  onClick={() => setTab(id)}
+                  type="button"
+                >
+                  {label}
+                </button>
+              ))}
+            </nav>
+          ) : (
+            <Logo size={26} />
+          )}
+        </header>
+        {body}
+      </main>
 
-      {readOnlyVault ? (
-        <section className={s.col} aria-label="Activity">
-          <h2 className={s.h2}>Activity</h2>
-          <AuditFeed vaultPda={readOnlyVault} />
-        </section>
-      ) : (
-        <div className={s.grid}>
-          <section className={s.col} aria-label="Vault">
-            <h2 className={s.h2}>Vault</h2>
-            <WalletConnect />
-            {owner && vault.loading && !vault.data ? <span className={s.muted}>Reading vault from Devnet…</span> : null}
-            {vault.error ? <span className={s.danger}>{vault.error}</span> : null}
-            {owner ? <VaultPanel data={vault.data} demoAllowlist={demoAllowlist} onChanged={vault.refresh} /> : null}
-          </section>
-          <section className={s.col} aria-label="Speak">
-            <h2 className={s.h2}>Speak</h2>
-            {owner && vault.data?.vault ? (
-              <VoiceConsole
-                onRun={vault.refresh}
-                owner={owner}
-                vaultFundsLamports={fundsLamports}
-                vaultPda={vault.data.vault.vault_pda}
-              />
-            ) : (
-              <span className={s.muted}>Connect a wallet and create a vault first.</span>
-            )}
-          </section>
-          <section className={s.col} aria-label="Activity">
-            <h2 className={s.h2}>Activity</h2>
-            <AuditFeed vaultPda={vaultPda} />
-          </section>
-        </div>
-      )}
-    </main>
+      {drawer ? <SettingsDrawer onClose={() => setDrawer(false)} /> : null}
+    </div>
   );
 }

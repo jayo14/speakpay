@@ -5,7 +5,10 @@ import { PublicKey } from "@solana/web3.js";
 import { demoReadiness, type VaultReadResponse } from "@speakpay/shared";
 import { useEffect, useState } from "react";
 
+import { CircleCheck, CircleX } from "lucide-react";
+
 import s from "../dashboard.module.css";
+import { TonePill } from "./status-chip";
 
 // Pre-demo reset checklist (PRD §2), live from chain. All green = ready to record a take.
 export function ReadinessCard({ data }: { data: VaultReadResponse }) {
@@ -40,16 +43,15 @@ export function ReadinessCard({ data }: { data: VaultReadResponse }) {
   const ready = checks.every((c) => c.ok);
 
   return (
-    <div className={s.card}>
-      <span className={s.label} style={{ color: ready ? "var(--pass)" : "var(--block)" }}>
-        {ready ? "Demo ready" : "Not demo ready"}
-      </span>
+    <div className={s.stack}>
+      <TonePill tone={ready ? "paid" : "blocked"}>{ready ? "Demo ready" : "Not demo ready yet"}</TonePill>
       {checks.map((c) => (
         <div className={s.row} key={c.id}>
-          <span style={{ color: c.ok ? "var(--pass)" : "var(--block)" }}>
-            {c.ok ? "✓" : "✗"} {c.label}
+          <span style={{ alignItems: "center", color: c.ok ? "var(--paid)" : "var(--blocked)", display: "inline-flex", gap: 8 }}>
+            {c.ok ? <CircleCheck size={16} strokeWidth={2} /> : <CircleX size={16} strokeWidth={2} />}
+            <span style={{ color: "var(--text)" }}>{c.label}</span>
           </span>
-          <span className={s.muted}>{c.detail}</span>
+          <span className={`${s.muted} ${s.small}`}>{c.detail}</span>
         </div>
       ))}
     </div>

@@ -6,7 +6,9 @@ import { useState } from "react";
 import { apiPost, errorText } from "@/lib/client/api";
 
 import s from "../dashboard.module.css";
-import { StatusChip, short } from "./status-chip";
+import { describeRun } from "@/lib/client/describe-run";
+
+import { ToneIcon, short } from "./status-chip";
 import { playTts } from "./play-tts";
 
 // T1 — Layer 2 proof: the delegate key signs directly, bypassing voice, LLM and prechecks.
@@ -30,9 +32,16 @@ export function RoguePanel({ vaultPda, onRun }: { vaultPda: string; onRun: () =>
     }
   };
 
+  const d = res ? describeRun({ ...res, kind: "rogue", amount_lamports: null, scraped_json: null }) : null;
+
   return (
-    <div className={s.card}>
-      <span className={s.label}>Security test · simulate a compromised agent</span>
+    <div className={s.stack} style={{ gap: 10 }}>
+      <div>
+        <h2 className={s.h2}>Simulate a hacked agent</h2>
+        <p className={s.muted}>
+          Sends a payment straight from the agent key — skipping voice, AI and every app check — so you can see Solana itself refuse it.
+        </p>
+      </div>
       {[DEMO_POLICY.roguePayLamports, DEMO_POLICY.rogueCompliantLamports].map((amt, i) => (
         <button
           className={i === 0 ? s.btnDanger : s.btnSecondary}
@@ -41,26 +50,26 @@ export function RoguePanel({ vaultPda, onRun }: { vaultPda: string; onRun: () =>
           onClick={() => void fire(amt)}
           type="button"
         >
-          {busy === amt ? "Submitting to Solana…" : `Simulate rogue agent: pay ${lamportsToSol(amt)} SOL`}
+          {busy === amt ? "Sending to Solana…" : `Hacked agent pays ${lamportsToSol(amt)} SOL`}
         </button>
       ))}
       {error ? <span className={s.danger}>{error}</span> : null}
-      {res ? (
-        <>
-          <StatusChip status={res.status} />
-          <p>{res.speech_text}</p>
-          {res.error_code ? (
-            <span className={s.mono}>
-              {res.error_code}
-              {res.error_number ? ` (${res.error_number}, 0x${res.error_number.toString(16)})` : ""}
-            </span>
-          ) : null}
-          {res.tx_signature ? (
-            <a className={s.ok} href={explorerTxUrl(res.tx_signature)} rel="noreferrer" target="_blank">
-              Tx {short(res.tx_signature, 8)} ↗
-            </a>
-          ) : null}
-        </>
+      {res && d ? (
+        <div className={s.row} style={{ flexWrap: "nowrap", justifyContent: "flex-start" }}>
+          <ToneIcon tone={d.tone} />
+          <div style={{ minWidth: 0 }}>
+            <div className={s.listTitle}>{d.title}</div>
+            <div className={s.listSub}>
+              {d.detail}
+              {res.error_number ? ` · code ${res.error_number} (0x${res.error_number.toString(16)})` : ""}
+            </div>
+            {res.tx_signature ? (
+              <a className={s.linkBtn} href={explorerTxUrl(res.tx_signature)} rel="noreferrer" target="_blank">
+                See it on Solana Explorer · {short(res.tx_signature, 6)}
+              </a>
+            ) : null}
+          </div>
+        </div>
       ) : null}
     </div>
   );
