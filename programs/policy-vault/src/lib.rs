@@ -328,3 +328,100 @@ mod pda_tests {
     const EXPECTED_VAULT: &str = "DNpZ7WfN9vCzjvQ81mU1jXmeNEzxLEPkD4Yhao9RT1zo";
     const EXPECTED_FUNDS: &str = "4oJ6iSTZnKBKBHmSaKsNypsPpBncyPsV7Fm8x4epZJJ8";
 }
+
+/// Byte-level vectors for packages/shared/src/codec.ts (test/codec.test.ts).
+/// They let the TS client encode/decode without the IDL while staying provably identical.
+#[cfg(test)]
+mod codec_vectors {
+    use super::*;
+    use anchor_lang::{AccountSerialize, Event, InstructionData};
+
+    fn hex(b: &[u8]) -> String {
+        b.iter().map(|x| format!("{x:02x}")).collect()
+    }
+
+    fn k(n: u8) -> Pubkey {
+        Pubkey::new_from_array([n; 32])
+    }
+
+    #[test]
+    fn vectors_match_committed_fixture() {
+        let ixs: Vec<(&str, Vec<u8>)> = vec![
+            (
+                "init_policy_vault",
+                instruction::InitPolicyVault {
+                    agent_delegate: k(1),
+                    max_per_tx: 50_000_000,
+                    daily_cap: 150_000_000,
+                    cooldown_secs: 30,
+                    allowlist: vec![k(2), k(3)],
+                }
+                .data(),
+            ),
+            ("deposit", instruction::Deposit { amount: 200_000_000 }.data()),
+            (
+                "update_policy",
+                instruction::UpdatePolicy {
+                    max_per_tx: 1,
+                    daily_cap: 2,
+                    cooldown_secs: 0,
+                    allowlist: vec![],
+                    agent_delegate: k(4),
+                }
+                .data(),
+            ),
+            (
+                "execute_guarded_transfer",
+                instruction::ExecuteGuardedTransfer { amount: 20_000_000, evidence_hash: [0xab; 32] }.data(),
+            ),
+            ("toggle_freeze", instruction::ToggleFreeze { frozen: true }.data()),
+            ("withdraw_all", instruction::WithdrawAll {}.data()),
+        ];
+        let mut json = String::from("{\n  \"instructions\": {\n");
+        for (i, (name, data)) in ixs.iter().enumerate() {
+            let comma = if i + 1 < ixs.len() { "," } else { "" };
+            json.push_str(&format!("    \"{name}\": \"{}\"{comma}\n", hex(data)));
+        }
+        json.push_str("  },\n");
+
+        let vault = PolicyVault {
+            owner: k(5),
+            agent_delegate: k(1),
+            max_per_tx: 50_000_000,
+            daily_cap: 150_000_000,
+            daily_spent: 20_000_000,
+            window_start_ts: 1_800_000_000,
+            cooldown_secs: 30,
+            last_tx_ts: 1_800_000_100,
+            is_frozen: true,
+            allowlist: vec![k(2)],
+            last_evidence_hash: [0xcd; 32],
+            tx_count: 7,
+            bump: 254,
+            funds_bump: 253,
+        };
+        let mut buf = Vec::new();
+        vault.try_serialize(&mut buf).unwrap();
+        json.push_str(&format!("  \"policy_vault_account\": \"{}\",\n", hex(&buf)));
+        json.push_str(&format!("  \"policy_vault_space\": {},\n", 8 + PolicyVault::INIT_SPACE));
+
+        let ev = ExecutionAudited {
+            vault: k(6),
+            recipient: k(2),
+            amount: 20_000_000,
+            evidence_hash: [0xab; 32],
+            daily_spent: 20_000_000,
+            tx_count: 1,
+            ts: 1_800_000_200,
+        };
+        json.push_str(&format!("  \"execution_audited_event\": \"{}\"\n}}\n", hex(&ev.data())));
+
+        let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../packages/shared/test/vectors/program.json");
+        if std::env::var("UPDATE_VECTORS").is_ok() {
+            std::fs::create_dir_all(std::path::Path::new(path).parent().unwrap()).unwrap();
+            std::fs::write(path, &json).unwrap();
+        }
+        let committed = std::fs::read_to_string(path).expect("run with UPDATE_VECTORS=1 to create vectors");
+        assert_eq!(committed, json, "program layout changed: rerun with UPDATE_VECTORS=1 and update clients");
+    }
+}
