@@ -83,6 +83,8 @@ Package manager: **pnpm** only (no npm/yarn lockfiles). Node ≥ 20.
 | `pnpm lint` | ESLint across `apps/*`, `packages/*`; `cargo clippy` for the program |
 | `pnpm db:push` | `supabase db push` (applies `supabase/migrations`) |
 | `pnpm firecrawl:check <url> [runs]` | T2 gate: scrapes `/merchants/shady` N times (default 10) with the production payload and requires 403 every time; real Firecrawl credits (`FIRECRAWL_API_KEY` in env) |
+| `pnpm stress:policy <url>` | Block 5: fresh burner vault on Devnet, exercises every policy rule end to end, returns funds (`FUNDER_KEYPAIR` path in env) |
+| `pnpm readme:map` | Regenerates the README verification map with commit-pinned permalinks; fails if an anchor is missing |
 | `pnpm g1:smoke <url>` | Read-only checks of a live deployment for the G1 gate (`scripts/g1-smoke.mjs`); makes no payments |
 | `pnpm verify` | `typecheck && lint && test:program && build:web` |
 

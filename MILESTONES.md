@@ -239,3 +239,59 @@ grep -rnE "channel\(|postgres_changes|supabase_realtime" apps supabase
 ```bash
 git rev-parse HEAD
 ```
+
+---
+
+## 5. Block 5 Runbook (Sat 14:00–18:00)
+
+Run against the **production** deployment. Each command prints PASS/FAIL and exits non-zero on failure.
+
+**A. Policy stress test (Builder A).** Fresh burner vault, real Devnet transactions; needs `ROGUE_SIM_ENABLED=true`.
+
+```bash
+FUNDER_KEYPAIR=~/.config/solana/speakpay/deployer.json pnpm stress:policy https://<prod-url>
+```
+
+Expect 8/8 checks:
+- compliant payment `PASSED`
+- second payment inside the cooldown → `CooldownActive`
+- payment after the cooldown `PASSED`
+- payment over the remaining daily cap → `ExceedsDailyCap`
+- payment over max per tx → `ExceedsMaxPerTx`
+- payment while frozen → `VaultFrozen`
+- withdraw_all while frozen drains the vault to 0
+- recipient not on the allowlist → `RecipientNotAllowlisted`
+
+**B. T2 injection gate (Builder A).** Save the output as `docs/firecrawl-403.txt` for the README.
+
+```bash
+FIRECRAWL_API_KEY=fc-... pnpm firecrawl:check https://<prod-url> | tee docs/firecrawl-403.txt
+```
+
+**C. APK (Builder B).** EAS cloud builds don't read `apps/mobile/.env`: set every `EXPO_PUBLIC_*` (ENVIRONMENT.md §1.3) for the `preview` environment first.
+
+```bash
+cd apps/mobile && npx eas-cli env:list --environment preview
+```
+
+```bash
+pnpm apk
+```
+
+Install the downloaded `.apk` on a **second, clean** Android device (or after uninstalling the dev build), and run the full PRD §2 demo with Metro **not** running. Then attach it to a GitHub Release `v1.0.0-hackathon` as `speakpay-devnet.apk`.
+
+Fallback if the EAS queue is over 30 minutes:
+
+```bash
+cd apps/mobile && npx expo prebuild -p android && npx expo run:android --variant release
+```
+
+**D. In-app readiness (both).** The Vault tab (phone and web) shows a live **Demo ready** checklist (PRD §2 reset: unfrozen, vault ≥ 0.10 SOL, delegate ≥ 0.05 SOL, cooldown elapsed, room under the daily cap). Record takes only when it is all green.
+
+**E. README map (Builder A, at 18:00 freeze).** Copy `docs/live-proofs.example.json` to `docs/live-proofs.json` and fill it with real signatures, then commit and regenerate:
+
+```bash
+pnpm readme:map
+```
+
+Commit the README (and re-run after any later code change: permalinks pin the commit).
