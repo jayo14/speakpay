@@ -1,4 +1,4 @@
-import { explorerTxUrl, lamportsToSol, type VoiceCommandResponse } from '@speakpay/shared'
+import { explorerTxUrl, lamportsToSol, type AuditFreezeResponse, type VoiceCommandResponse } from '@speakpay/shared'
 import { useMutation } from '@tanstack/react-query'
 import { useMobileWallet } from '@wallet-ui/react-native-web3js'
 import * as WebBrowser from 'expo-web-browser'
@@ -6,10 +6,12 @@ import { useCallback } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { AppButton } from '@/components/app-button'
 import { appStyles, colors } from '@/constants/app-styles'
-import { apiPostAudio } from '@/features/api/api-client'
+import { apiPost, apiPostAudio } from '@/features/api/api-client'
 import { playTts } from '@/features/console/play-tts'
+import { RoguePanel } from '@/features/console/rogue-panel'
 import { StatusChip } from '@/features/console/status-chip'
 import { useHoldToTalk } from '@/features/console/use-hold-to-talk'
+import { VerifyBadge } from '@/features/console/verify-badge'
 import { useOwnerAction, useVault } from '@/features/vault/use-vault'
 import { ellipsify } from '@/utils/ellipsify'
 import { formatError } from '@/utils/format-error'
@@ -19,7 +21,20 @@ export function ConsoleFeatureIndex() {
   const { account } = useMobileWallet()
   const owner = account?.address.toBase58()
   const vault = useVault(owner).data?.vault ?? null
-  const freeze = useOwnerAction()
+  const freezeTx = useOwnerAction()
+  // T4: owner signs toggle_freeze(true) via MWA, then the server verifies it on-chain and logs FROZEN.
+  const freeze = useMutation({
+    mutationFn: async (parentRunId: string) => {
+      const { signature } = await freezeTx.mutateAsync({ action: 'toggle_freeze', params: { frozen: true } })
+      return apiPost<AuditFreezeResponse>('/api/audit/freeze', {
+        vault_pda: vault!.vault_pda,
+        tx_signature: signature,
+        client: 'mobile',
+        ...(parentRunId ? { parent_run_id: parentRunId } : {}),
+      })
+    },
+    onSuccess: (r) => void playTts(r.tts_audio_base64),
+  })
 
   const command = useMutation({
     mutationFn: (uri: string) =>
@@ -28,7 +43,11 @@ export function ConsoleFeatureIndex() {
         owner_pubkey: owner!,
         client: 'mobile',
       }),
-    onSuccess: (r) => void playTts(r.tts_audio_base64),
+    onSuccess: (r) => {
+      void playTts(r.tts_audio_base64)
+      // Voice kill switch: open the wallet straight away (PRD §2, 1:30).
+      if (r.next_action === 'sign_freeze') freeze.mutate(r.run_id)
+    },
   })
   const onRecorded = useCallback((uri: string) => command.mutate(uri), [command])
   const talk = useHoldToTalk(onRecorded)
@@ -78,6 +97,7 @@ export function ConsoleFeatureIndex() {
           ) : null}
           {r.error_code ? <Text style={appStyles.mono}>Code: {r.error_code}{r.error_number ? ` (${r.error_number})` : ''}</Text> : null}
           {r.evidence_hash ? <Text style={appStyles.mono}>Evidence: {ellipsify(r.evidence_hash, 8)}</Text> : null}
+          {r.status === 'PASSED' && r.run_id ? <VerifyBadge runId={r.run_id} /> : null}
           {r.tx_signature ? (
             <Pressable onPress={() => void WebBrowser.openBrowserAsync(explorerTxUrl(r.tx_signature!))}>
               <Text style={appStyles.textSuccess}>Tx {ellipsify(r.tx_signature, 8)} — view on Explorer</Text>
@@ -90,14 +110,16 @@ export function ConsoleFeatureIndex() {
           {r.next_action === 'sign_freeze' ? (
             <AppButton
               busy={freeze.isPending}
-              onPress={() => freeze.mutate({ action: 'toggle_freeze', params: { frozen: true } })}
-              title="Approve freeze in wallet"
+              onPress={() => freeze.mutate(r.run_id)}
+              title={freeze.isSuccess ? 'Frozen' : 'Approve freeze in wallet'}
             />
           ) : null}
-          {freeze.isSuccess ? <Text style={{ color: colors.frozen }}>Vault frozen on-chain.</Text> : null}
+          {freeze.isSuccess ? <Text style={{ color: colors.frozen }}>{freeze.data.speech_text}</Text> : null}
           {freeze.isError ? <Text style={appStyles.textDanger}>{formatError(freeze.error)}</Text> : null}
         </View>
       ) : null}
+
+      <RoguePanel vaultPda={vault.vault_pda} />
     </View>
   )
 }

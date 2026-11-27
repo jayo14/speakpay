@@ -4,6 +4,7 @@ import * as WebBrowser from 'expo-web-browser'
 import { Pressable, Text, View } from 'react-native'
 import { appStyles, colors } from '@/constants/app-styles'
 import { StatusChip } from '@/features/console/status-chip'
+import { VerifyBadge } from '@/features/console/verify-badge'
 import { useAuditFeed } from '@/features/feed/use-audit-feed'
 import { useVault } from '@/features/vault/use-vault'
 import { ellipsify } from '@/utils/ellipsify'
@@ -22,6 +23,7 @@ function Row({ run }: { run: AuditRunRow }) {
       {run.amount_lamports !== null ? <Text style={appStyles.mono}>{lamportsToSol(run.amount_lamports)} SOL</Text> : null}
       {run.error_code ? <Text style={appStyles.mono}>{run.error_code}</Text> : null}
       {run.evidence_hash ? <Text style={appStyles.mono}>hash {ellipsify(run.evidence_hash, 6)}</Text> : null}
+      {run.status === 'PASSED' && run.kind === 'voice' ? <VerifyBadge runId={run.id} /> : null}
       {run.tx_signature ? (
         <Pressable onPress={() => void WebBrowser.openBrowserAsync(explorerTxUrl(run.tx_signature!))}>
           <Text style={appStyles.mono}>tx {ellipsify(run.tx_signature, 6)} ↗</Text>
