@@ -18,11 +18,15 @@ work before their UI can be switched on. Nothing below has been implemented.
 
 **Frontend follow-up once shipped:** countdown card on Speak, then enable the setting.
 
-## 2. Payment notifications (idea, needs decision)
+## 2. Pay by wallet address (typed, not spoken)
+
+Some people won't want to speak a payment. Nobody can say a 44-character address, so the UI would offer **"Pay someone" → paste/scan address + amount → confirm**. Today no route lets the agent pay an arbitrary recipient chosen by the owner (only `/api/voice-command`, which pays the scraped merchant, and the fixed-recipient rogue test). Needs a route such as `POST /api/pay-address { vault_pda, recipient, amount_lamports }` (owner-authenticated) that runs the same prechecks + `execute_guarded_transfer`, and an audit `kind` for it. The on-chain allowlist still applies. Until then the frontend shows nothing for it.
+
+## 3. Payment notifications (idea, needs decision)
 
 Push on Android needs the Expo push token stored per wallet and a sender triggered on each audit row; email fallback needs an email address (not collected today), a provider and opt-in. Watch out: `audit_runs` is public-read, so don't put contact details there.
 
-## 3. Optional, for later ideas (`docs/IDEAS.md`)
+## 4. Optional, for later ideas (`docs/IDEAS.md`)
 
 - Global unique @usernames: a table + uniqueness check (the username is device-only today).
 - Saved payees: storage + parser support for "Send <name> <amount>".
@@ -30,4 +34,8 @@ Push on Android needs the Expo push token stored per wallet and a sender trigger
 
 ## Not needed from backend
 
-App lock (PIN + fingerprint), light/dark, receipts, plain-language activity, presets, and the settings drawer are all frontend-only.
+App lock (PIN + fingerprint), light/dark, receipts, plain-language activity, presets, avatars and the settings drawer are all frontend-only.
+
+## FYI: one-line frontend change to `apps/mobile/polyfill.js`
+
+`TurboModuleRegistry.get(...)` → `TurboModuleRegistry?.get?.(...)` so the screens can also render in a browser (used for design screenshots). Behaviour on Android is unchanged.
