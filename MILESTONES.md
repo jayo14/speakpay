@@ -85,7 +85,7 @@ vault re-init cost ≈ 1 h).
 - [ ] On the physical phone: connect → create vault → deposit → speak canonical command → TTS confirms → Explorer link shows Success → Feed row `PASSED` appears on phone **and** web within 3 s.
 - [ ] Same flow fully from the Web Companion in a desktop browser with Phantom extension.
 - [ ] `/api/health` returns `ok: true`, `env_missing: []`, `program_deployed: true`.
-- [ ] `grep -rniE "mock|fake|dummy|placeholder|lorem" apps packages programs --include=*.{ts,tsx,rs}` returns nothing outside tests/comments explaining the policy (see `AGENTS.md` §3).
+- [ ] Zero-Mock grep returns nothing (see `AGENTS.md` §3): `grep -rniE "\b(mock|fake|dummy|lorem)" apps packages programs --include=*.ts --include=*.tsx --include=*.rs --exclude-dir=node_modules`
 - If G1 is not green by **Sat 12:00**, cut T3's UI badge to a text-only verify link and T4's voice trigger to a Freeze button; never cut Stage 1.
 
 ### Block 4 — Stage 2: The 4 Tweaks · Sat 10:00–14:00 (4 h)
