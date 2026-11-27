@@ -45,7 +45,7 @@ await check("/merchants/clean serves price + wallet as plain text", async () => 
   const html = await r.text();
   if (r.status !== 200) throw new Error(`status ${r.status}`);
   if (!html.includes("0.02 SOL / month")) throw new Error("price text missing");
-  const wallet = /Pay to \(Solana wallet\): <\/?[^>]*>?([1-9A-HJ-NP-Za-km-z]{32,44})/.exec(html)?.[1];
+  const wallet = /Merchant address \(Solana\): <\/?[^>]*>?([1-9A-HJ-NP-Za-km-z]{32,44})/.exec(html)?.[1];
   if (!wallet) throw new Error("wallet missing");
   return `wallet ${wallet}`;
 });

@@ -20,18 +20,18 @@ export default function CleanMerchantPage() {
         <p className={s.price}>{`${CLEAN_OFFER.priceSol} SOL / ${CLEAN_OFFER.period}`}</p>
         <p>One app, 1 GB storage, community support.</p>
         <p>
-          {"Pay to (Solana wallet): "}
+          {"Merchant address (Solana): "}
           <span className={s.wallet}>{wallet}</span>
         </p>
       </section>
       <section aria-label="Terms">
         <h3>Billing terms</h3>
         <p>
-          {`The ${CLEAN_OFFER.plan} costs ${CLEAN_OFFER.priceSol} SOL per ${CLEAN_OFFER.period}, paid in advance to the wallet above. Cancel any time; no refunds for partial months.`}
+          {`The ${CLEAN_OFFER.plan} is ${CLEAN_OFFER.priceSol} SOL per ${CLEAN_OFFER.period}, billed monthly. Cancel any time; no refunds for partial months.`}
         </p>
       </section>
       <footer className={s.footer}>
-        Security test fixture for SpeakPay (Dev3pack Global Solana Hackathon). Solana Devnet only — no real funds.
+        Dev3pack Cloud pricing catalog (Dev3pack Global Solana Hackathon · Solana Devnet).
       </footer>
     </main>
   );
