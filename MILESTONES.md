@@ -130,3 +130,111 @@ Any new feature needs both builders to agree *and* is reverted at 22:00 if not g
 **Sun 04:00–08:00:** buffer only. No commits to `main` except README link fixes.
 Re-line-number the README if any such fix shifts referenced lines.
 
+---
+
+## 3. Submission & Stage-1 AI-Audit Readiness Checklist
+
+Run twice, by each builder independently, from a **logged-out browser** and a
+**fresh clone**.
+
+### 3.1 Repository
+- [ ] Repo is **public**; default branch contains the frozen commit; no force-pushes after submission.
+- [ ] `git log --all -p | grep -nE "BEGIN (RSA|EC|OPENSSH) PRIVATE|sk_live|service_role|\[[0-9]{1,3}(,[0-9]{1,3}){63}\]"` returns nothing (no keys, no 64-byte keypair arrays).
+- [ ] `.env.example` files exist for `apps/web` and `apps/mobile`, contain no real values.
+- [ ] `pnpm install && pnpm -r build && anchor build && anchor test` succeed on a fresh clone (except for steps needing secrets, which are documented).
+- [ ] Zero-Mock grep (G1) clean. No seeded rows, no hardcoded signatures, balances or hashes in source.
+
+### 3.2 Live Deployments
+- [ ] Program ID in README == `declare_id!` == `Anchor.toml` == Vercel env == APK env. `solana program show` on Devnet succeeds.
+- [ ] Production Vercel URL loads `/dashboard` (no landing page), `/merchants/clean`, `/merchants/shady`, `/api/health` → `ok: true`.
+- [ ] `/merchants/shady` re-verified to 403 within 1 h of submission.
+- [ ] Supabase `audit_runs` contains only real runs (each PASSED/ONCHAIN_REJECTED/FROZEN row's `tx_signature` resolves on Explorer).
+- [ ] `agent_delegate` has ≥ 0.2 Devnet SOL; demo vault has ≥ 0.1 SOL and is **unfrozen** for judges.
+
+### 3.3 Android APK
+- [ ] GitHub Release `v1.0.0-hackathon` has `speakpay-devnet.apk` attached, installs on a clean Android device, and runs without Metro (release/preview profile, not a dev client needing a bundler).
+- [ ] Install instructions in README (enable unknown sources, Phantom Devnet).
+
+### 3.4 Media
+- [ ] Video < 3:00, public/unlisted link plays logged-out, shows all beats of PRD §2.
+- [ ] `docs/architecture.png` renders in README.
+
+### 3.5 Form
+- [ ] Tracks selected: Best Overall, Solana Mobile, Nigeria Local, Firecrawl, ElevenLabs, Supabase.
+- [ ] Every sponsor field pastes the file:line references from the README map.
+- [ ] Submitted, confirmation screenshot saved. **Time: ≤ Sun 04:00 WAT.**
+
+---
+
+## 4. `README.md` Template (fill at Sat 18:00 from the frozen commit)
+
+Line numbers must come from the exact commit judges see. Regenerate them with
+`grep -n` (commands below) after the last code change. Use GitHub permalinks
+(`/blob/<commit-sha>/path#L10-L42`) so the links never drift.
+
+````markdown
+# SpeakPay — talk to pay, inside limits the AI can't break
+
+Voice-first Solana Mobile treasury agent. Speak a payment goal → Firecrawl
+verifies the live merchant page and blocks prompt injection → a scoped agent key
+pays through a custom Anchor program that enforces spending limits on-chain.
+
+**Live:** <VERCEL_URL>/dashboard · **APK:** <RELEASE_URL> · **Video (2:45):** <VIDEO_URL>
+**Program (Devnet):** `<PROGRAM_ID>` — [Explorer](https://explorer.solana.com/address/<PROGRAM_ID>?cluster=devnet)
+
+## Judge & Sponsor Verification Map
+
+| Integration | What to check | Where (permalinks) | Live proof |
+|---|---|---|---|
+| **Solana — Anchor program** | 6 instructions, PDA vault, ordered policy checks, `PolicyError` | `programs/policy-vault/src/lib.rs#L<a>-L<b>` (`execute_guarded_transfer`), `#L<c>-L<d>` (`PolicyError`) | Deploy tx · PASSED tx · Rogue `ExceedsMaxPerTx` tx · `VaultFrozen` tx |
+| **Solana — tests** | pass + revert per error | `tests/policy-vault.ts#L..` | CI / `anchor test` output |
+| **Solana Mobile — MWA** | `transact()` authorize + `signAndSendTransactions` | `apps/mobile/src/mwa.ts#L..` | APK release |
+| **Firecrawl** | `POST /v2/scrape`, top-level `checkPromptInjection: true`, JSON schema, 403 handling | `apps/web/lib/firecrawl.ts#L..`, `apps/web/app/api/voice-command/route.ts#L..` | `docs/firecrawl-403.png` + audit row `INJECTION_BLOCKED` |
+| **ElevenLabs STT** | `scribe_v3`, keyterms | `apps/web/lib/elevenlabs.ts#L..` | transcript in any audit row |
+| **ElevenLabs TTS** | `eleven_flash_v2_5`, base64 MP3 | `apps/web/lib/elevenlabs.ts#L..` | video |
+| **Supabase** | schema, RLS, Realtime | `supabase/migrations/001_init.sql#L..`, `apps/mobile/src/supabase.ts#L..`, `apps/web/app/dashboard/page.tsx#L..` | sample row below |
+| **Evidence hash** | preimage → SHA-256 → on-chain | `packages/shared/src/evidence.ts#L..`, `lib.rs#L..` (`ExecutionAudited`) | `/api/audit/verify/<run_id>` → `match: true` |
+
+### Sample audit receipt (real row, matches tx `<SIG>`)
+```json
+{ "status": "PASSED", "evidence_hash": "<hex>", "tx_signature": "<SIG>", "...": "..." }
+```
+Recompute: `<VERCEL_URL>/api/audit/verify/<run_id>`.
+
+## Architecture
+![architecture](docs/architecture.png)
+
+## Security model
+<3 bullets from PRD §3.2 + known limitations PRD §10.4>
+
+## Why self-hosted merchant pages are not mocks
+<PRD D6, 2 sentences>
+
+## Run it
+<link ENVIRONMENT.md; pnpm commands from AGENTS.md §4>
+
+## Team
+<names, handles, Nigeria Local track note>
+````
+
+**Line-number helper commands** (run from repo root on the frozen commit):
+
+```bash
+grep -nE "pub fn (init_policy_vault|deposit|update_policy|execute_guarded_transfer|toggle_freeze|withdraw_all)|pub enum PolicyError|pub struct ExecutionAudited" programs/policy-vault/src/lib.rs
+```
+
+```bash
+grep -rnE "v2/scrape|checkPromptInjection|SCRAPE_PROMPT_INJECTION_DETECTED|speech-to-text|text-to-speech|scribe|eleven_flash" apps/web
+```
+
+```bash
+grep -rnE "transact\(|signAndSendTransactions|authorize\(" apps/mobile/src
+```
+
+```bash
+grep -rnE "channel\(|postgres_changes|supabase_realtime" apps supabase
+```
+
+```bash
+git rev-parse HEAD
+```
