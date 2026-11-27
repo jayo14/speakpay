@@ -307,3 +307,24 @@ pub struct WithdrawAll<'info> {
     pub vault_funds: SystemAccount<'info>,
     pub system_program: Program<'info, System>,
 }
+
+#[cfg(test)]
+mod pda_tests {
+    use super::*;
+
+    /// Cross-checked by packages/shared/test/pda.test.ts (same fixed inputs).
+    /// Uses a fixed program id so `anchor keys sync` does not change the vectors.
+    #[test]
+    fn seeds_match_shared_package() {
+        let program = Pubkey::new_from_array([9u8; 32]);
+        let owner = Pubkey::new_from_array([7u8; 32]);
+        let (vault, _) = Pubkey::find_program_address(&[POLICY_VAULT_SEED, owner.as_ref()], &program);
+        let (funds, _) = Pubkey::find_program_address(&[VAULT_FUNDS_SEED, vault.as_ref()], &program);
+        println!("program={program} owner={owner} vault={vault} funds={funds}");
+        assert_eq!(vault.to_string(), EXPECTED_VAULT);
+        assert_eq!(funds.to_string(), EXPECTED_FUNDS);
+    }
+
+    const EXPECTED_VAULT: &str = "DNpZ7WfN9vCzjvQ81mU1jXmeNEzxLEPkD4Yhao9RT1zo";
+    const EXPECTED_FUNDS: &str = "4oJ6iSTZnKBKBHmSaKsNypsPpBncyPsV7Fm8x4epZJJ8";
+}
