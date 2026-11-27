@@ -5,3 +5,4 @@
 .price { font-size: 40px; font-weight: 700; margin: 8px 0; font-family: var(--font-mono); }
 .wallet { font-family: var(--font-mono); word-break: break-all; }
 .footer { margin-top: 64px; font-size: 12px; color: var(--ink-muted); border-top: 1px solid var(--line); padding-top: 16px; }
+.finePrint { font-size: 11px; color: var(--ink-muted); line-height: 1.3; }
