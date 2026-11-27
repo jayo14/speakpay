@@ -188,11 +188,11 @@ pays through a custom Anchor program that enforces spending limits on-chain.
 |---|---|---|---|
 | **Solana — Anchor program** | 6 instructions, PDA vault, ordered policy checks, `PolicyError` | `programs/policy-vault/src/lib.rs#L<a>-L<b>` (`execute_guarded_transfer`), `#L<c>-L<d>` (`PolicyError`) | Deploy tx · PASSED tx · Rogue `ExceedsMaxPerTx` tx · `VaultFrozen` tx |
 | **Solana — tests** | pass + revert per error | `tests/policy-vault.ts#L..` | CI / `anchor test` output |
-| **Solana Mobile — MWA** | `transact()` authorize + `signAndSendTransactions` | `apps/mobile/src/mwa.ts#L..` | APK release |
+| **Solana Mobile — MWA** | `MobileWalletProvider` + `useMobileWallet()` `connect` / `signAndSendTransactions` (wraps MWA `transact()`) | `apps/mobile/components/app-providers.tsx#L..`, `apps/mobile/features/**#L..` | APK release |
 | **Firecrawl** | `POST /v2/scrape`, top-level `checkPromptInjection: true`, JSON schema, 403 handling | `apps/web/lib/firecrawl.ts#L..`, `apps/web/app/api/voice-command/route.ts#L..` | `docs/firecrawl-403.png` + audit row `INJECTION_BLOCKED` |
 | **ElevenLabs STT** | `scribe_v3`, keyterms | `apps/web/lib/elevenlabs.ts#L..` | transcript in any audit row |
 | **ElevenLabs TTS** | `eleven_flash_v2_5`, base64 MP3 | `apps/web/lib/elevenlabs.ts#L..` | video |
-| **Supabase** | schema, RLS, Realtime | `supabase/migrations/001_init.sql#L..`, `apps/mobile/src/supabase.ts#L..`, `apps/web/app/dashboard/page.tsx#L..` | sample row below |
+| **Supabase** | schema, RLS, Realtime | `supabase/migrations/001_init.sql#L..`, `apps/mobile/features/feed/*.ts#L..`, `apps/web/app/dashboard/page.tsx#L..` | sample row below |
 | **Evidence hash** | preimage → SHA-256 → on-chain | `packages/shared/src/evidence.ts#L..`, `lib.rs#L..` (`ExecutionAudited`) | `/api/audit/verify/<run_id>` → `match: true` |
 
 ### Sample audit receipt (real row, matches tx `<SIG>`)
@@ -228,7 +228,7 @@ grep -rnE "v2/scrape|checkPromptInjection|SCRAPE_PROMPT_INJECTION_DETECTED|speec
 ```
 
 ```bash
-grep -rnE "transact\(|signAndSendTransactions|authorize\(" apps/mobile/src
+grep -rnE "MobileWalletProvider|useMobileWallet|signAndSendTransactions|signMessages" apps/mobile --include=*.ts --include=*.tsx --exclude-dir=node_modules
 ```
 
 ```bash

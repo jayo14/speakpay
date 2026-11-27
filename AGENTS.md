@@ -69,7 +69,9 @@ Package manager: **pnpm** only (no npm/yarn lockfiles). Node ≥ 20.
 |---|---|
 | `pnpm install` | Install all workspaces. |
 | `pnpm build:program` | `anchor build` |
-| `pnpm test:program` | `anchor test` (localnet, includes LiteSVM suites) |
+| `pnpm test:program` | `anchor test` (build + localnet + test script; LiteSVM suites added in Block 1) |
+| `pnpm test:program:host` | `cargo test -p policy-vault` — policy check order, error codes, PDA seed vectors; runs without the Solana toolchain |
+| `pnpm test` | Every workspace's tests (`@speakpay/shared` vitest) |
 | `pnpm deploy:program` | `anchor deploy --provider.cluster devnet` |
 | `pnpm idl:sync` | Copy `target/idl/policy_vault.json` + `target/types/policy_vault.ts` → `packages/shared/src/idl/` |
 | `pnpm dev:web` | `next dev` for `apps/web` on :3000 |
@@ -127,7 +129,8 @@ Package manager: **pnpm** only (no npm/yarn lockfiles). Node ≥ 20.
 - Keep `react-native-get-random-values` imported first and the `Buffer` polyfill
   from the template's entry file; do not remove them.
 - Owner transactions come from `POST /api/tx/owner` and are signed with MWA
-  `transact(... signAndSendTransactions ...)`. Do not bundle Anchor in the app.
+  `useMobileWallet().signAndSendTransactions` (`@wallet-ui/react-native-web3js`, which
+  wraps MWA `transact()`). Do not bundle Anchor in the app.
 - Cluster is `solana:devnet` everywhere.
 
 ### 5.5 Scope
@@ -181,6 +184,8 @@ Append here (date, WAT time, who, decision, why). Keep PRD §9 in sync for big o
 
 | When (WAT) | Who | Decision | Why |
 |---|---|---|---|
-| — | — | Audio library (PRD D12): _fill at Fri 17:00_ | — |
-| — | — | Anchor version pinned in `Anchor.toml`: _fill at Fri 17:00_ | — |
+| Fri (scaffold) | scaffold | Audio library (PRD D12): **`expo-audio` ~58.0.12** | Template is Expo SDK 58; `expo-av` is gone. |
+| Fri (scaffold) | scaffold | Anchor **1.2.2** (`anchor-lang`, `[toolchain]` in `Anchor.toml`); TS client `@anchor-lang/core` 1.2.2 + `@solana/web3.js` 1.x | Latest stable. Anchor 1.x `CpiContext::new` takes the program id (`Pubkey`), not an `AccountInfo`. |
+| Fri (scaffold) | scaffold | Mobile template **`expo-web3js-minimal`** (create-solana-dapp 4.8.5); MWA via `@wallet-ui/react-native-web3js` (PRD D15) | Same web3.js as shared/backend; no UI kit to fight the Swiss design. |
+| Fri (scaffold) | scaffold | Program ID in repo is a throwaway until `anchor keys sync` | Real program keypair is generated on Builder A's machine and never committed. |
 | — | — | Dedicated Devnet RPC provider: _fill_ | — |

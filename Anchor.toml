@@ -19,4 +19,5 @@ cluster = "devnet"
 wallet = "~/.config/solana/speakpay/deployer.json"
 
 [scripts]
-test = "pnpm --filter @speakpay/program-tests test"
+# Host-side policy tests for now; Builder A adds LiteSVM suites in Block 1 (MILESTONES.md).
+test = "cargo test -p policy-vault"
