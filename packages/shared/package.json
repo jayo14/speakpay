@@ -6,14 +6,16 @@
   "exports": {
     ".": "./src/index.ts",
     "./evidence": "./src/evidence.ts",
-    "./idl/policy_vault.json": "./src/idl/policy_vault.json"
+    "./idl/policy_vault.json": "./src/idl/policy_vault.json",
+    "./codec": "./src/codec.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
   "dependencies": {
-    "canonicalize": "^2.1.0"
+    "canonicalize": "^2.1.0",
+    "buffer": "^6.0.3"
   },
   "peerDependencies": {
     "@solana/web3.js": "^1.98.0"
