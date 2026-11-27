@@ -7,6 +7,7 @@ describe("tts copy (PRD §5.2)", () => {
     const samples = [
       copy.passed("Dev3pack Cloud", "Starter Plan", 20_000_000),
       copy.injection(),
+      copy.roguePassed(10_000_000),
       copy.onchainRejected("ExceedsMaxPerTx"),
       copy.onchainRejected("SomethingNew"),
       copy.priceTooHigh(0.2, 0.05),

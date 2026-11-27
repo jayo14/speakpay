@@ -64,6 +64,7 @@ Only `EXPO_PUBLIC_*` variables exist here; **every one is compiled into the APK 
 | `EXPO_PUBLIC_SUPABASE_ANON_KEY` | anon / publishable key | feed + Realtime |
 | `EXPO_PUBLIC_APP_IDENTITY_NAME` | `SpeakPay` | MWA app identity shown in Phantom |
 | `EXPO_PUBLIC_APP_IDENTITY_URI` | `https://speakpay.vercel.app` | MWA app identity URI |
+| `EXPO_PUBLIC_MERCHANT_CLEAN_WALLET` | base58 pubkey (= `MERCHANT_CLEAN_WALLET`) | prefills the demo allowlist in the create-vault form (PRD §2, §8.2); a public address, not a secret |
 
 EAS-only (never in `.env`, never in the repo): `EXPO_TOKEN` (**SECRET**, CI only),
 Android keystore (EAS-managed credentials).
@@ -81,6 +82,7 @@ Android keystore (EAS-managed credentials).
 - `NEXT_PUBLIC_POLICY_VAULT_PROGRAM_ID` == `EXPO_PUBLIC_POLICY_VAULT_PROGRAM_ID` == `Anchor.toml` == `declare_id!`.
 - `EXPO_PUBLIC_API_BASE_URL` == `EXPO_PUBLIC_APP_IDENTITY_URI` == `NEXT_PUBLIC_APP_URL` (prod).
 - `EXPO_PUBLIC_SUPABASE_*` == `NEXT_PUBLIC_SUPABASE_*`.
+- `EXPO_PUBLIC_MERCHANT_CLEAN_WALLET` == `MERCHANT_CLEAN_WALLET` (web reads the server value and passes it to the dashboard form).
 - The delegate pubkey derived from `AGENT_DELEGATE_SECRET_KEY` is what `/api/tx/owner`
   puts in `init_policy_vault.agent_delegate`, and what `/api/health` reports.
 - Demo constants (not env — in `packages/shared/src/constants.ts`): `max_per_tx = 50_000_000`,

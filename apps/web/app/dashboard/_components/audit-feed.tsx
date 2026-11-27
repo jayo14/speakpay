@@ -8,6 +8,7 @@ import { supabaseBrowser } from "@/lib/client/supabase-browser";
 
 import s from "../dashboard.module.css";
 import { StatusChip, short } from "./status-chip";
+import { VerifyBadge } from "./verify-badge";
 
 const LIMIT = 50;
 
@@ -79,6 +80,7 @@ export function AuditFeed({ vaultPda }: { vaultPda: string | null }) {
           {r.amount_lamports !== null ? <span className={s.mono}>{lamportsToSol(r.amount_lamports)} SOL</span> : null}
           {r.error_code ? <span className={s.mono}>{r.error_code}</span> : null}
           {r.evidence_hash ? <span className={s.mono}>hash {short(r.evidence_hash)}</span> : null}
+          {r.status === "PASSED" && r.kind === "voice" ? <VerifyBadge runId={r.id} /> : null}
           {r.tx_signature ? (
             <a className={s.mono} href={explorerTxUrl(r.tx_signature)} rel="noreferrer" target="_blank">
               tx {short(r.tx_signature)} ↗

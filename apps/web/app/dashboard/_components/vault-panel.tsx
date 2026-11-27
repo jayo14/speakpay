@@ -26,9 +26,17 @@ function useNow() {
 }
 
 // Vault card + owner actions (PRD §8.3 left column). All values are a live chain read.
-export function VaultPanel({ data, onChanged }: { data: VaultReadResponse | null; onChanged: () => void }) {
+export function VaultPanel({
+  data,
+  onChanged,
+  demoAllowlist,
+}: {
+  data: VaultReadResponse | null;
+  onChanged: () => void;
+  demoAllowlist: string;
+}) {
   const action = useOwnerAction(onChanged);
-  const [allow, setAllow] = useState("");
+  const [allow, setAllow] = useState(demoAllowlist);
   const now = useNow();
 
   if (!data) return null;

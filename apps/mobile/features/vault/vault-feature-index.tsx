@@ -5,6 +5,7 @@ import * as WebBrowser from 'expo-web-browser'
 import { useState } from 'react'
 import { Pressable, Text, TextInput, View } from 'react-native'
 import { AppButton } from '@/components/app-button'
+import { AppConfig } from '@/constants/app-config'
 import { appStyles, colors } from '@/constants/app-styles'
 import { AccountFeatureConnect } from '@/features/account/account-feature-connect'
 import { AccountFeatureDisconnect } from '@/features/account/account-feature-disconnect'
@@ -37,7 +38,7 @@ export function VaultFeatureIndex() {
   const owner = account?.address.toBase58()
   const vaultQuery = useVault(owner)
   const action = useOwnerAction()
-  const [allowlistWallet, setAllowlistWallet] = useState('')
+  const [allowlistWallet, setAllowlistWallet] = useState(AppConfig.merchantCleanWallet)
   const [lastSig, setLastSig] = useState<string | null>(null)
 
   if (!account || !owner) {

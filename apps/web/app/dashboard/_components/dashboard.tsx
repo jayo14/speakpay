@@ -11,7 +11,7 @@ import { WalletConnect } from "./wallet-connect";
 
 // Web Companion (PRD §8.3). Same program, API and Realtime feed as the APK.
 // `readOnlyVault` = /dashboard?vault=<pda>: feed only, no wallet (demo second screen).
-export function Dashboard({ readOnlyVault }: { readOnlyVault: string | null }) {
+export function Dashboard({ readOnlyVault, demoAllowlist }: { readOnlyVault: string | null; demoAllowlist: string }) {
   const { publicKey } = useWallet();
   const owner = readOnlyVault ? null : (publicKey?.toBase58() ?? null);
   const vault = useVault(owner);
@@ -38,7 +38,7 @@ export function Dashboard({ readOnlyVault }: { readOnlyVault: string | null }) {
             <WalletConnect />
             {owner && vault.loading && !vault.data ? <span className={s.muted}>Reading vault from Devnet…</span> : null}
             {vault.error ? <span className={s.danger}>{vault.error}</span> : null}
-            {owner ? <VaultPanel data={vault.data} onChanged={vault.refresh} /> : null}
+            {owner ? <VaultPanel data={vault.data} demoAllowlist={demoAllowlist} onChanged={vault.refresh} /> : null}
           </section>
           <section className={s.col} aria-label="Voice console">
             <h2 className={s.h2}>Voice console</h2>

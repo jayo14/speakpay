@@ -98,7 +98,7 @@ vault re-init cost ≈ 1 h).
 
 **M4 Definition of Done (14:00):**
 - [ ] T1: rogue 0.5 SOL → Explorer shows a **failed** tx with custom program error `0x1771` (6001 `ExceedsMaxPerTx`); feed row `ONCHAIN_REJECTED`.
-- [ ] T2: `/merchants/shady` returns 403 `SCRAPE_PROMPT_INJECTION_DETECTED` 10/10 times (log saved for README); no `tx_signature` on those rows.
+- [ ] T2: `/merchants/shady` returns 403 `SCRAPE_PROMPT_INJECTION_DETECTED` 10/10 times (log saved for README); no `tx_signature` on those rows. Run `FIRECRAWL_API_KEY=… pnpm firecrawl:check <prod URL>` and save its output.
 - [ ] T3: verify returns `match: true` for the latest PASSED run, and `match: false` if one byte of the stored transcript is altered in a scratch copy (do not edit real rows).
 - [ ] T4: "Freeze my vault" → one MWA approval → PDA `is_frozen = true` on Explorer account view → rogue 0.01 SOL fails with `0x1770` (6000 `VaultFrozen`).
 

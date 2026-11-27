@@ -53,8 +53,8 @@ export function useOwnerAction(onDone: () => void) {
   const [signature, setSignature] = useState<string | null>(null);
 
   const run = useCallback(
-    async (action: Omit<OwnerAction, "owner_pubkey">) => {
-      if (!publicKey) return;
+    async (action: Omit<OwnerAction, "owner_pubkey">): Promise<string | null> => {
+      if (!publicKey) return null;
       setBusy(true);
       setError(null);
       try {
@@ -69,8 +69,10 @@ export function useOwnerAction(onDone: () => void) {
         if (value.err) throw new Error(`Transaction failed on-chain: ${JSON.stringify(value.err)}`);
         await apiPost<VaultSyncResponse>("/api/vault/sync", { owner_pubkey: owner, tx_signature: sig });
         setSignature(sig);
+        return sig;
       } catch (e) {
         setError(errorText(e));
+        return null;
       } finally {
         setBusy(false);
         onDone();
