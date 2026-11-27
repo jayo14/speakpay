@@ -82,6 +82,7 @@ Package manager: **pnpm** only (no npm/yarn lockfiles). Node ≥ 20.
 | `pnpm typecheck` | `tsc --noEmit` in every TS workspace |
 | `pnpm lint` | ESLint across `apps/*`, `packages/*`; `cargo clippy` for the program |
 | `pnpm db:push` | `supabase db push` (applies `supabase/migrations`) |
+| `pnpm firecrawl:check <url> [runs]` | T2 gate: scrapes `/merchants/shady` N times (default 10) with the production payload and requires 403 every time; real Firecrawl credits (`FIRECRAWL_API_KEY` in env) |
 | `pnpm g1:smoke <url>` | Read-only checks of a live deployment for the G1 gate (`scripts/g1-smoke.mjs`); makes no payments |
 | `pnpm verify` | `typecheck && lint && test:program && build:web` |
 
@@ -195,3 +196,7 @@ Append here (date, WAT time, who, decision, why). Keep PRD §9 in sync for big o
 | Block 2 | scaffold | If the audit insert fails after a payment, the response keeps `status: PASSED` + real signature and sets `error_code: AUDIT_WRITE_FAILED` | Never hide a completed on-chain transfer behind an error. |
 | Block 2 | scaffold | Intent LLM fallback uses the official `@anthropic-ai/sdk` `messages.parse` + `zodOutputFormat` (structured outputs), `effort: "low"`; refusals fall back to the grammar result | Typed, schema-validated output; no forced `tool_choice`. |
 | Block 3 | human-approved | **`EXPO_PUBLIC_MERCHANT_CLEAN_WALLET`** (public pubkey) prefills the mobile create form's allowlist; the web dashboard gets the server's `MERCHANT_CLEAN_WALLET` as a prop (no new web var) | PRD §2/§8.2 demo allowlist. Still editable; empty = open allowlist. |
+| Block 4 | built in parallel with G1 (human-approved) | Stage 2 routes and UI shipped before G1 is signed off | User asked to build in parallel; G1 must still pass before the demo is recorded. |
+| Block 4 | scaffold | Rogue route labels outcomes truthfully: a "rogue" amount inside policy really pays and is logged `PASSED` | Zero-Mock: the demo uses 0.01 SOL only after a freeze, where it fails with `VaultFrozen`. |
+| Block 4 | scaffold | `/api/audit/verify` checks the event's vault, recipient and amount as well as the hash; falls back to the account's `last_evidence_hash` (latest payment only) when tx logs are unavailable, reported as `source: "account"` | A valid hash attached to a different transfer must not verify. |
+| Block 4 | scaffold | `/api/audit/freeze` requires: tx succeeded, owner signed, a `toggle_freeze(true)` instruction for our program, PDA `is_frozen`; idempotent per signature | Nothing is logged unless the chain agrees. |
