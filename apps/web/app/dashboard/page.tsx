@@ -1,13 +1,23 @@
-// Web Companion (PRD §8.3). Wallet, voice console and live feed land in Block 3.
-export default function DashboardPage() {
+import { PublicKey } from "@solana/web3.js";
+
+import { Dashboard } from "./_components/dashboard";
+import { SolanaProviders } from "./_components/providers";
+
+function validVault(v: string | string[] | undefined): string | null {
+  if (typeof v !== "string") return null;
+  try {
+    return new PublicKey(v).toBase58() === v ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+// Web Companion fallback (PRD §8.3). No landing page: `/` redirects here.
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const readOnlyVault = validVault((await searchParams).vault);
   return (
-    <main className="shell">
-      <h1>SpeakPay</h1>
-      <p>Web companion — Solana Devnet.</p>
-      <hr className="rule" />
-      <p>
-        System status: <a href="/api/health">/api/health</a>
-      </p>
-    </main>
+    <SolanaProviders>
+      <Dashboard readOnlyVault={readOnlyVault} />
+    </SolanaProviders>
   );
 }

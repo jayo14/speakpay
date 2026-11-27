@@ -82,6 +82,7 @@ Package manager: **pnpm** only (no npm/yarn lockfiles). Node ≥ 20.
 | `pnpm typecheck` | `tsc --noEmit` in every TS workspace |
 | `pnpm lint` | ESLint across `apps/*`, `packages/*`; `cargo clippy` for the program |
 | `pnpm db:push` | `supabase db push` (applies `supabase/migrations`) |
+| `pnpm g1:smoke <url>` | Read-only checks of a live deployment for the G1 gate (`scripts/g1-smoke.mjs`); makes no payments |
 | `pnpm verify` | `typecheck && lint && test:program && build:web` |
 
 **Never** run: `expo start` without `--dev-client` for MWA testing (that is Expo Go),
