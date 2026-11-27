@@ -20,7 +20,8 @@
     "lint": "pnpm -r --if-present lint && cargo clippy -p policy-vault -- -D warnings",
     "test": "pnpm -r --if-present test",
     "db:push": "supabase db push",
-    "verify": "pnpm typecheck && pnpm lint && pnpm test:program && pnpm build:web"
+    "verify": "pnpm typecheck && pnpm lint && pnpm test:program && pnpm build:web",
+    "g1:smoke": "node scripts/g1-smoke.mjs"
   },
   "devDependencies": {
     "typescript": "~5.9.3"
