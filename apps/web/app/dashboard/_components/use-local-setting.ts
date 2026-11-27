@@ -44,3 +44,6 @@ export function useLocalSetting(key: string, fallback: string): [string, (v: str
 
 export const USERNAME_KEY = "speakpay.username";
 export const CANCEL_WINDOW_KEY = "speakpay.cancelWindowSecs";
+export const AVATAR_KEY = "speakpay.avatar";
+export const PROFILE_DONE_KEY = "speakpay.profileDone";
+export const THEME_KEY = "speakpay.theme"; // "system" | "light" | "dark"

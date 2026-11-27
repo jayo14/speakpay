@@ -1,22 +1,31 @@
-import { CircleCheck, ShieldX, Snowflake, TriangleAlert } from "lucide-react";
+import { Check, ShieldX, TriangleAlert } from "lucide-react";
 import type { ReactNode } from "react";
 
 import type { Tone } from "@/lib/client/describe-run";
 
 import s from "../dashboard.module.css";
+import { IceCube } from "./ice-cube";
 
 export function TonePill({ tone, children }: { tone: Tone; children: ReactNode }) {
   return <span className={`${s.status} ${s[`tone_${tone}`]}`}>{children}</span>;
 }
 
-const ICON = { paid: CircleCheck, blocked: ShieldX, frozen: Snowflake, neutral: TriangleAlert } as const;
-
-/** Round tinted icon used in lists, receipts and the result card. */
+/** Round tinted status mark. One circle only: the glyph inside is a bare tick, shield or ice cube. */
 export function ToneIcon({ tone, size = 44 }: { tone: Tone; size?: number }) {
-  const Icon = ICON[tone];
+  const g = Math.round(size * 0.56);
+  const glyph =
+    tone === "paid" ? (
+      <Check size={g} strokeWidth={2.75} />
+    ) : tone === "blocked" ? (
+      <ShieldX size={g} strokeWidth={2.25} />
+    ) : tone === "frozen" ? (
+      <IceCube size={g} />
+    ) : (
+      <TriangleAlert size={g} strokeWidth={2.25} />
+    );
   return (
-    <span className={`${s.listIcon} ${s[`tone_${tone}`]}`} style={{ height: size, width: size }}>
-      <Icon aria-hidden size={size * 0.48} strokeWidth={1.75} />
+    <span aria-hidden className={`${s.listIcon} ${s[`tone_${tone}`]}`} style={{ height: size, width: size }}>
+      {glyph}
     </span>
   );
 }

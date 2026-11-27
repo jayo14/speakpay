@@ -1,19 +1,29 @@
 /* SpeakPay web app — Phantom-inspired shell (docs/DESIGN.md). Tokens live in globals.css. */
 
 /* ---------- Shell ---------- */
-.app { min-height: 100vh; display: grid; grid-template-columns: 1fr; }
-@media (min-width: 1024px) { .app { grid-template-columns: 264px 1fr; } }
+.app { min-height: 100vh; }
 
-.sidebar { display: none; }
+/* Desktop icon rail: 84px collapsed, expands to 264px over the content on click */
+.rail { display: none; }
 @media (min-width: 1024px) {
-  .sidebar {
-    display: flex; flex-direction: column; gap: 8px; position: sticky; top: 0; height: 100vh;
-    padding: 28px 16px 20px; border-right: 1px solid var(--line); background: var(--bg);
+  .rail {
+    position: fixed; z-index: 30; top: 0; left: 0; height: 100vh; width: 84px; overflow: hidden;
+    display: flex; flex-direction: column; gap: 6px; padding: 22px 16px 18px;
+    background: var(--bg); border-right: 1px solid var(--line); cursor: pointer;
+    transition: width var(--t-med) var(--ease), box-shadow var(--t-med) var(--ease);
   }
+  .railOpen { width: 264px; box-shadow: var(--shadow-float); cursor: default; }
 }
-.sidebarBrand { padding: 4px 12px 24px; }
+.railScrim { position: fixed; inset: 0; z-index: 29; background: transparent; }
+.railBrand { display: flex; align-items: center; gap: 12px; border: 0; background: none; padding: 6px 0 22px; cursor: pointer; text-align: left; }
+.railIcon { width: 52px; flex: none; display: grid; place-items: center; }
+.railLabel {
+  white-space: nowrap; opacity: 0; transform: translateX(-6px);
+  transition: opacity var(--t-fast) var(--ease), transform var(--t-med) var(--ease);
+}
+.railOpen .railLabel { opacity: 1; transform: none; transition-delay: 70ms; }
 .navItem {
-  display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; border: 0;
+  display: flex; align-items: center; gap: 4px; padding: 10px 0; border-radius: 14px; border: 0; width: 100%;
   background: transparent; color: var(--text-muted); font-size: 16px; font-weight: 600; cursor: pointer; text-align: left;
   transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
 }
@@ -22,8 +32,11 @@
 .sidebarSpacer { flex: 1; }
 
 .main { min-width: 0; padding: 0 16px 96px; }
-@media (min-width: 1024px) { .main { padding: 32px 40px 64px; } }
+@media (min-width: 1024px) { .main { margin-left: 84px; padding: 32px 40px 64px; } }
 .content { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+/* Every tab / setup step eases in */
+.view { animation: viewIn var(--t-med) var(--ease); }
+@keyframes viewIn { from { opacity: 0; transform: translateY(8px); } }
 
 /* Top bar (phone + tablet): avatar + pill tabs, like Phantom */
 .topbar {
@@ -40,11 +53,17 @@
   transition: background var(--t-med) var(--ease), color var(--t-med) var(--ease);
 }
 .pillActive { background: var(--primary); color: var(--primary-text); }
-.avatar {
-  width: 40px; height: 40px; flex: none; border-radius: 50%; border: 0; cursor: pointer; display: grid; place-items: center;
-  background: var(--primary-soft); color: var(--primary); font-weight: 700; font-size: 16px;
+.avatarBtn { border: 0; background: none; padding: 0; border-radius: 50%; cursor: pointer; display: inline-flex; transition: transform var(--t-fast) var(--ease); }
+.avatarBtn:hover { transform: scale(1.05); }
+.avatarPop { display: inline-flex; animation: pop var(--t-med) var(--ease); }
+@keyframes pop { from { transform: scale(0.92); opacity: 0.6; } }
+.swatch {
+  width: 40px; height: 40px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; outline: 2px solid transparent;
+  outline-offset: 2px; transition: transform var(--t-fast) var(--ease), outline-color var(--t-fast) var(--ease);
 }
-.avatarLg { width: 56px; height: 56px; font-size: 22px; }
+.swatch:hover { transform: scale(1.08); }
+.swatchSm { width: 30px; height: 30px; }
+.swatchOn { outline-color: var(--primary); }
 
 /* ---------- Type ---------- */
 .h1 { font-size: 30px; line-height: 1.15; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
@@ -138,9 +157,11 @@
 .orbIcon { display: grid; place-items: center; animation: iconIn var(--t-med) var(--ease); }
 @keyframes iconIn { from { opacity: 0; transform: scale(0.7) rotate(-8deg); } to { opacity: 1; transform: none; } }
 .orb_listening { transform: scale(1.06); }
-.orb_paid { background: var(--paid); color: #fff; }
-.orb_blocked { background: var(--blocked); color: #fff; }
-.orb_frozen { background: var(--frozen-glow); color: #0f2a36; }
+/* Results: no colour flood — the orb turns to the surface, a thin ring and the bold glyph carry the status */
+.orb_paid, .orb_blocked, .orb_frozen { background: var(--surface); box-shadow: var(--shadow-card); }
+.orb_paid { color: var(--paid); outline: 3px solid var(--paid); outline-offset: -3px; }
+.orb_blocked { color: var(--blocked); outline: 3px solid var(--blocked); outline-offset: -3px; }
+.orb_frozen { color: var(--frozen); outline: 3px solid var(--frozen); outline-offset: -3px; background: var(--frozen-soft); }
 /* Soft idle breathing ring */
 .ring {
   position: absolute; inset: 40px; border-radius: 50%; border: 2px solid var(--primary); opacity: 0.18;
@@ -226,6 +247,7 @@
 .dots { display: flex; gap: 6px; justify-content: center; }
 .dot { width: 8px; height: 6px; border-radius: 6px; background: var(--surface-3); transition: width var(--t-med) var(--ease); }
 .dotOn { width: 22px; background: var(--primary); }
+.dotDone { background: color-mix(in srgb, var(--primary) 45%, transparent); }
 .walletRow {
   display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; align-items: center; padding: 14px; border-radius: 16px;
   border: 1px solid var(--line); background: var(--surface); cursor: pointer; text-align: left; width: 100%;
@@ -233,3 +255,19 @@
 .walletRow img { width: 40px; height: 40px; border-radius: 10px; }
 .hero { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 12px 0; }
 .heroMark { color: var(--primary); }
+
+/* ---------- Settings (boxless rows; only the wallet uses a card) ---------- */
+.section { display: flex; flex-direction: column; gap: 12px; padding-top: 16px; border-top: 1px solid var(--line); }
+.plainRow { display: flex; align-items: center; gap: 12px; min-height: 44px; }
+.plainRow > :nth-child(2) { flex: 1; min-width: 0; }
+.switch {
+  position: relative; width: 50px; height: 30px; flex: none; border-radius: 999px; border: 0; cursor: pointer;
+  background: var(--surface-3); transition: background var(--t-med) var(--ease);
+}
+.switch:disabled { opacity: 0.45; cursor: not-allowed; }
+.switchOn { background: var(--primary); }
+.switchKnob {
+  position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); transition: transform var(--t-med) var(--ease);
+}
+.switchOn .switchKnob { transform: translateX(20px); }

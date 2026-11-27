@@ -2,15 +2,17 @@
 
 import { useWallet } from "@solana/wallet-adapter-react";
 import { CircleHelp, Mic, ReceiptText, Settings, Shield } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import s from "../dashboard.module.css";
 import { ActivityView } from "./activity-view";
+import { Avatar } from "./avatar";
 import { ConnectCard } from "./connect-card";
-import { Logo } from "./logo";
-import { Avatar, SettingsDrawer } from "./settings-drawer";
+import { Logo, LogoMark } from "./logo";
+import { ProfileStep } from "./profile-step";
+import { SettingsDrawer } from "./settings-drawer";
 import { SpeakView } from "./speak-view";
-import { USERNAME_KEY, useLocalSetting } from "./use-local-setting";
+import { AVATAR_KEY, PROFILE_DONE_KEY, USERNAME_KEY, useLocalSetting } from "./use-local-setting";
 import { useVault } from "./use-vault";
 import { VaultView } from "./vault-view";
 
@@ -37,19 +39,30 @@ export function Dashboard({
   const vault = useVault(owner);
   const [tab, setTabState] = useState<Tab>(initialTab);
   const [drawer, setDrawer] = useState(false);
+  const [railOpen, setRailOpen] = useState(false);
   const [username] = useLocalSetting(USERNAME_KEY, "");
+  const [avatar] = useLocalSetting(AVATAR_KEY, "lavender");
+  const [profileDone] = useLocalSetting(PROFILE_DONE_KEY, "");
 
   const setTab = useCallback((t: Tab) => {
     setTabState(t);
+    setRailOpen(false);
     const url = new URL(window.location.href);
     url.searchParams.set("tab", t);
     window.history.replaceState(null, "", url);
   }, []);
 
+  useEffect(() => {
+    if (!railOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setRailOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [railOpen]);
+
   // Read-only second screen for the demo: /dashboard?vault=<pda>
   if (readOnlyVault) {
     return (
-      <div className={s.main}>
+      <div className={s.main} style={{ marginLeft: 0 }}>
         <div className={s.content} style={{ paddingTop: 28 }}>
           <div className={s.row}>
             <Logo size={30} />
@@ -63,23 +76,39 @@ export function Dashboard({
 
   const data = vault.data;
   const setupDone = !!data?.vault && (data.vault_funds_lamports > 0 || data.vault.tx_count > 0);
+  const inSetup = !owner || profileDone !== "1" || (!!data && !setupDone);
 
+  // First-run flow: Connect → Profile → Rules → Funds, then the three sections.
   let body: React.ReactNode;
   if (!owner) body = <ConnectCard />;
+  else if (profileDone !== "1") body = <ProfileStep />;
   else if (!data) body = <p className={s.muted}>{vault.error ?? "Reading your vault from Solana…"}</p>;
   else if (tab === "vault" || !setupDone) body = <VaultView data={data} demoAllowlist={demoAllowlist} onChanged={vault.refresh} />;
   else if (tab === "activity") body = <ActivityView vaultPda={data.vault!.vault_pda} />;
   else body = <SpeakView data={data} onGoToVault={() => setTab("vault")} onRun={vault.refresh} owner={owner} username={username} />;
 
-  const activeTab: Tab = owner && data && !setupDone ? "vault" : tab;
-  const showNav = !!owner;
+  const activeTab: Tab = inSetup ? "vault" : tab;
+  const showNav = !inSetup;
 
   return (
     <div className={s.app}>
-      <aside className={s.sidebar}>
-        <div className={s.sidebarBrand}>
-          <Logo size={30} />
-        </div>
+      {/* Desktop icon rail: click the rail (or the logo) to expand; click outside or press Esc to close. */}
+      {railOpen ? <div aria-hidden className={s.railScrim} onClick={() => setRailOpen(false)} /> : null}
+      <aside
+        aria-label="Main menu"
+        className={`${s.rail} ${railOpen ? s.railOpen : ""}`}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) setRailOpen((o) => !o);
+        }}
+      >
+        <button aria-expanded={railOpen} aria-label={railOpen ? "Collapse menu" : "Expand menu"} className={s.railBrand} onClick={() => setRailOpen((o) => !o)} type="button">
+          <span className={s.railIcon} style={{ color: "var(--primary)" }}>
+            <LogoMark size={30} />
+          </span>
+          <span className={s.railLabel} style={{ fontSize: 19, fontWeight: 700, color: "var(--text)" }}>
+            SpeakPay
+          </span>
+        </button>
         {showNav
           ? TABS.map(({ id, label, Icon }) => (
               <button
@@ -87,28 +116,50 @@ export function Dashboard({
                 className={`${s.navItem} ${activeTab === id ? s.navItemActive : ""}`}
                 key={id}
                 onClick={() => setTab(id)}
+                title={railOpen ? undefined : label}
                 type="button"
               >
-                <Icon size={20} strokeWidth={1.75} />
-                {label}
+                <span className={s.railIcon}>
+                  <Icon size={22} strokeWidth={1.75} />
+                </span>
+                <span className={s.railLabel}>{label}</span>
               </button>
             ))
           : null}
-        <div className={s.sidebarSpacer} />
-        <button className={s.navItem} onClick={() => setDrawer(true)} type="button">
-          <Settings size={20} strokeWidth={1.75} />
-          Profile &amp; settings
+        <div className={s.sidebarSpacer} onClick={() => setRailOpen((o) => !o)} />
+        <button
+          className={s.navItem}
+          onClick={() => {
+            setRailOpen(false);
+            setDrawer(true);
+          }}
+          title={railOpen ? undefined : "Profile & settings"}
+          type="button"
+        >
+          <span className={s.railIcon}>
+            <Settings size={22} strokeWidth={1.75} />
+          </span>
+          <span className={s.railLabel}>Profile &amp; settings</span>
         </button>
-        <a className={s.navItem} href="https://github.com/jayo14/speakpay#readme" rel="noreferrer" style={{ textDecoration: "none" }} target="_blank">
-          <CircleHelp size={20} strokeWidth={1.75} />
-          Help &amp; support
+        <a
+          className={s.navItem}
+          href="https://github.com/jayo14/speakpay#readme"
+          rel="noreferrer"
+          style={{ textDecoration: "none" }}
+          target="_blank"
+          title={railOpen ? undefined : "Help & support"}
+        >
+          <span className={s.railIcon}>
+            <CircleHelp size={22} strokeWidth={1.75} />
+          </span>
+          <span className={s.railLabel}>Help &amp; support</span>
         </a>
       </aside>
 
       <main className={s.main}>
         <header className={s.topbar}>
-          <button aria-label="Profile and settings" className={s.avatar} onClick={() => setDrawer(true)} type="button">
-            <Avatar username={username} />
+          <button aria-label="Profile and settings" className={s.avatarBtn} onClick={() => setDrawer(true)} type="button">
+            <Avatar color={avatar} size={40} username={username} />
           </button>
           {showNav ? (
             <nav aria-label="Sections" className={s.pills}>
@@ -128,7 +179,9 @@ export function Dashboard({
             <Logo size={26} />
           )}
         </header>
-        {body}
+        <div className={s.view} key={inSetup ? `setup:${!owner}:${profileDone}:${!!data?.vault}` : activeTab}>
+          {body}
+        </div>
       </main>
 
       {drawer ? <SettingsDrawer onClose={() => setDrawer(false)} /> : null}

@@ -1,4 +1,4 @@
-/* SpeakPay design tokens (docs/DESIGN.md). Light and dark follow the system setting.
+/* SpeakPay design tokens (docs/DESIGN.md). Light/dark follow the device; Settings can override.
    Every text/background pair below was checked to pass WCAG AA contrast. */
 :root {
   color-scheme: light dark;
@@ -54,8 +54,9 @@
   --space: 8px;
 }
 
+/* Dark: follows the device unless the user picked a theme in Settings (data-theme on <html>). */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #0f0a16;
     --surface: #1a1324;
     --surface-2: #241b30;
@@ -83,6 +84,37 @@
     --shadow-float: 0 18px 48px rgba(0, 0, 0, 0.5);
   }
 }
+
+:root[data-theme="dark"] {
+  --bg: #0f0a16;
+  --surface: #1a1324;
+  --surface-2: #241b30;
+  --surface-3: #2e2540;
+  --line: #2e2540;
+  --overlay: rgba(0, 0, 0, 0.6);
+
+  --text: #f4f0fa;
+  --text-muted: #a89cbc;
+
+  --primary: #c9b6f2;
+  --primary-text: #1b0b2e;
+  --primary-soft: #2c2140;
+  --link: #c9b6f2;
+
+  --paid: #3dbe8b;
+  --paid-soft: rgba(61, 190, 139, 0.14);
+  --blocked: #ff5a4e;
+  --blocked-soft: rgba(255, 90, 78, 0.14);
+  --frozen: #8fdcf7;
+  --frozen-soft: rgba(143, 220, 247, 0.12);
+  --frozen-glow: #8fdcf7;
+
+  --shadow-card: none;
+  --shadow-float: 0 18px 48px rgba(0, 0, 0, 0.5);
+}
+
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
 
 * { box-sizing: border-box; }
 

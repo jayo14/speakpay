@@ -2,12 +2,13 @@
 
 import { PublicKey } from "@solana/web3.js";
 import { DEMO_POLICY, explorerAddressUrl, explorerTxUrl, lamportsToSol, solToLamports, type VaultReadResponse } from "@speakpay/shared";
-import { ArrowDownToLine, ArrowUpFromLine, ChevronDown, ExternalLink, FlaskConical, Lock, Snowflake } from "lucide-react";
+import { ArrowDownToLine, ArrowUpFromLine, ChevronDown, ExternalLink, FlaskConical, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { formatSol } from "@/lib/client/describe-run";
 
 import s from "../dashboard.module.css";
+import { IceCube } from "./ice-cube";
 import { ReadinessCard } from "./readiness-card";
 import { RoguePanel } from "./rogue-panel";
 import { SetupDots } from "./setup-dots";
@@ -203,7 +204,7 @@ export function VaultView({ data, demoAllowlist, onChanged }: { data: VaultReadR
   if (!v) {
     return (
       <div className={s.content}>
-        <SetupDots step={2} />
+        <SetupDots step={3} />
         <div>
           <h1 className={s.h1}>Set your spending rules</h1>
           <p className={s.lead}>Solana enforces these limits — not the AI. You can change them any time.</p>
@@ -230,7 +231,7 @@ export function VaultView({ data, demoAllowlist, onChanged }: { data: VaultReadR
   if (data.vault_funds_lamports === 0 && v.tx_count === 0) {
     return (
       <div className={s.content}>
-        <SetupDots step={3} />
+        <SetupDots step={4} />
         <div>
           <h1 className={s.h1}>Add funds</h1>
           <p className={s.lead}>Move Devnet SOL from your wallet into your vault. Your agent can only spend what&apos;s here.</p>
@@ -252,7 +253,7 @@ export function VaultView({ data, demoAllowlist, onChanged }: { data: VaultReadR
         <h1 className={s.h1}>Vault</h1>
         {v.is_frozen ? (
           <TonePill tone="frozen">
-            <Snowflake size={14} strokeWidth={2} /> Frozen
+            <IceCube size={16} /> Frozen
           </TonePill>
         ) : (
           <TonePill tone="paid">Active</TonePill>
@@ -279,7 +280,7 @@ export function VaultView({ data, demoAllowlist, onChanged }: { data: VaultReadR
             onClick={() => void action.run({ action: "toggle_freeze", params: { frozen: !v.is_frozen } })}
             type="button"
           >
-            {v.is_frozen ? <Lock size={18} strokeWidth={1.75} /> : <Snowflake size={18} strokeWidth={1.75} />}
+            {v.is_frozen ? <Lock size={18} strokeWidth={1.75} /> : <IceCube size={20} />}
             {action.busy ? "Approve in wallet…" : v.is_frozen ? "Unfreeze" : "Freeze"}
           </button>
         </div>

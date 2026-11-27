@@ -17,9 +17,15 @@ export const viewport: Viewport = {
   ],
 };
 
+// Applies a saved Light/Dark choice before first paint (no flash). "system" = follow the device.
+const THEME_BOOT = `try{var t=localStorage.getItem("speakpay.theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
+      </head>
       <body>{children}</body>
     </html>
   );

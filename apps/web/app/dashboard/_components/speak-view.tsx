@@ -1,13 +1,14 @@
 "use client";
 
 import { lamportsToSol, type AuditFreezeResponse, type VaultReadResponse, type VoiceCommandResponse } from "@speakpay/shared";
-import { Mic, Shield, ShieldCheck, ShieldX, Snowflake } from "lucide-react";
+import { Check, Mic, Shield, ShieldX } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { apiPost, apiPostForm, errorText } from "@/lib/client/api";
 import { describeRun, formatSol, type Tone } from "@/lib/client/describe-run";
 
 import s from "../dashboard.module.css";
+import { IceCube } from "./ice-cube";
 import { playTts } from "./play-tts";
 import { receiptFromVoice, type Receipt } from "./receipt";
 import { ReceiptSheet } from "./receipt-sheet";
@@ -84,7 +85,17 @@ function StatusStrip({ data }: { data: VaultReadResponse }) {
 function OrbIcon({ state }: { state: OrbState }) {
   const p = { size: 64, strokeWidth: 1.5 } as const;
   const icon =
-    state === "working" ? <Shield {...p} /> : state === "paid" ? <ShieldCheck {...p} /> : state === "blocked" ? <ShieldX {...p} /> : state === "frozen" ? <Snowflake {...p} /> : <Mic {...p} />;
+    state === "working" ? (
+      <Shield {...p} />
+    ) : state === "paid" ? (
+      <Check size={80} strokeWidth={3} />
+    ) : state === "blocked" ? (
+      <ShieldX size={72} strokeWidth={2.25} />
+    ) : state === "frozen" ? (
+      <IceCube size={84} strokeWidth={2.5} />
+    ) : (
+      <Mic {...p} />
+    );
   // Keyed so each state change replays the morph-in animation.
   return (
     <span className={s.orbIcon} key={state}>
@@ -324,7 +335,7 @@ export function SpeakView({
           {result.transcript ? <p className={s.muted}>You said “{result.transcript}”</p> : null}
           {result.next_action === "sign_freeze" && !frozenNote ? (
             <button className={s.btnFrozen} disabled={freeze.busy} onClick={() => void approveFreeze(result.run_id)} type="button">
-              <Snowflake size={18} strokeWidth={1.75} />
+              <IceCube size={20} />
               {freeze.busy ? "Waiting for your wallet…" : "Approve freeze in wallet"}
             </button>
           ) : null}
