@@ -56,7 +56,10 @@ function ref(file, re, { block = false, label } = {}) {
 
 const programId = /policy_vault = "([1-9A-HJ-NP-Za-km-z]+)"/.exec(readFileSync(join(root, "Anchor.toml"), "utf8"))?.[1];
 const proofsPath = join(root, "docs/live-proofs.json");
-const proofs = existsSync(proofsPath) ? JSON.parse(readFileSync(proofsPath, "utf8")) : {};
+// Empty strings count as "not recorded yet" (copy docs/live-proofs.example.json to start).
+const proofs = Object.fromEntries(
+  Object.entries(existsSync(proofsPath) ? JSON.parse(readFileSync(proofsPath, "utf8")) : {}).filter(([, v]) => v),
+);
 const tx = (key, text) => (proofs[key] ? `[${text}](https://explorer.solana.com/tx/${proofs[key]}?cluster=devnet)` : `_${text}: pending_`);
 const link = (key, text) => (proofs[key] ? `[${text}](${proofs[key]})` : `_${text}: pending_`);
 
