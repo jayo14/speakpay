@@ -1,12 +1,16 @@
-import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, useAudioRecorder } from 'expo-audio'
+import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, useAudioRecorder, useAudioRecorderState } from 'expo-audio'
 import { useCallback, useRef, useState } from 'react'
 
 const MIN_MS = 700
 const MAX_MS = 15_000
 
-/** Press-in starts recording, release stops it (PRD §8.2 Screen 2). Returns the .m4a uri. */
+/**
+ * Press-in starts recording, release stops it. `level` (0..1) is the live microphone volume,
+ * from expo-audio metering, used to drive the voice waves around the orb.
+ */
 export function useHoldToTalk(onRecorded: (uri: string) => void) {
-  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY)
+  const recorder = useAudioRecorder({ ...RecordingPresets.HIGH_QUALITY, isMeteringEnabled: true })
+  const state = useAudioRecorderState(recorder, 80)
   const [recording, setRecording] = useState(false)
   const [hint, setHint] = useState<string | null>(null)
   const startedAt = useRef(0)
@@ -17,9 +21,8 @@ export function useHoldToTalk(onRecorded: (uri: string) => void) {
     if (!recorder.isRecording) return
     await recorder.stop()
     setRecording(false)
-    const held = Date.now() - startedAt.current
-    if (held < MIN_MS || !recorder.uri) {
-      setHint('Hold to speak')
+    if (Date.now() - startedAt.current < MIN_MS || !recorder.uri) {
+      setHint('Hold a little longer while you speak.')
       return
     }
     onRecorded(recorder.uri)
@@ -29,7 +32,7 @@ export function useHoldToTalk(onRecorded: (uri: string) => void) {
     setHint(null)
     const perm = await requestRecordingPermissionsAsync()
     if (!perm.granted) {
-      setHint('Microphone permission is required')
+      setHint('Allow microphone access to speak to pay.')
       return
     }
     await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true })
@@ -40,5 +43,8 @@ export function useHoldToTalk(onRecorded: (uri: string) => void) {
     maxTimer.current = setTimeout(() => void stop(), MAX_MS)
   }, [recorder, stop])
 
-  return { recording, hint, start, stop }
+  // metering is in dBFS (about -60 quiet … 0 loud)
+  const db = recording && typeof state.metering === 'number' ? state.metering : -160
+  const level = Math.max(0, Math.min(1, (db + 55) / 50))
+  return { recording, hint, start, stop, level }
 }

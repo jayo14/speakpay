@@ -1,6 +1,6 @@
 import type { AuditRunRow } from '@speakpay/shared'
 import { useEffect, useState } from 'react'
-import { supabase } from '@/features/feed/supabase'
+import { supabase } from '@/features/activity/supabase'
 
 const LIMIT = 50
 

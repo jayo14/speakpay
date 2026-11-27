@@ -2,12 +2,16 @@ import { PublicKey } from '@solana/web3.js'
 import { demoReadiness, type VaultReadResponse } from '@speakpay/shared'
 import { useQuery } from '@tanstack/react-query'
 import { useMobileWallet } from '@wallet-ui/react-native-web3js'
+import { CircleCheck, CircleX } from 'lucide-react-native'
 import { useEffect, useState } from 'react'
-import { Text, View } from 'react-native'
-import { appStyles, colors } from '@/constants/app-styles'
+import { View } from 'react-native'
+import { TonePill } from '@/components/tone-icon'
+import { Row, Txt } from '@/components/ui'
+import { usePalette } from '@/features/prefs/prefs-provider'
 
 // Pre-demo reset checklist (PRD §2), live from chain. All green = ready to record a take.
 export function ReadinessCard({ data }: { data: VaultReadResponse }) {
+  const p = usePalette()
   const { connection } = useMobileWallet()
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000))
   useEffect(() => {
@@ -24,17 +28,16 @@ export function ReadinessCard({ data }: { data: VaultReadResponse }) {
   const ready = checks.every((c) => c.ok)
 
   return (
-    <View style={appStyles.card}>
-      <Text style={[appStyles.label, { color: ready ? colors.pass : colors.block }]}>
-        {ready ? 'Demo ready' : 'Not demo ready'}
-      </Text>
+    <View style={{ gap: 10 }}>
+      <TonePill label={ready ? 'Demo ready' : 'Not demo ready yet'} tone={ready ? 'paid' : 'blocked'} />
       {checks.map((c) => (
-        <View key={c.id} style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 8 }}>
-          <Text style={{ color: c.ok ? colors.pass : colors.block, flexShrink: 1 }}>
-            {c.ok ? '✓' : '✗'} {c.label}
-          </Text>
-          <Text style={appStyles.textMuted}>{c.detail}</Text>
-        </View>
+        <Row key={c.id}>
+          <View style={{ alignItems: 'center', flex: 1, flexDirection: 'row', gap: 8 }}>
+            {c.ok ? <CircleCheck color={p.paid} size={16} strokeWidth={2} /> : <CircleX color={p.blocked} size={16} strokeWidth={2} />}
+            <Txt style={{ flexShrink: 1 }}>{c.label}</Txt>
+          </View>
+          <Txt variant="small">{c.detail}</Txt>
+        </Row>
       ))}
     </View>
   )
