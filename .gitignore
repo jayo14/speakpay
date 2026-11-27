@@ -1,0 +1,50 @@
+# --- Secrets & keypairs (NEVER COMMIT) ---
+.env
+.env.*
+!.env.example
+!**/.env.example
+*.keypair.json
+**/keys/
+**/*-keypair.json
+id.json
+agent-delegate.json
+target/deploy/*.json
+
+# --- Node / pnpm ---
+node_modules/
+.pnpm-store/
+npm-debug.log*
+pnpm-debug.log*
+
+# --- Next.js / Vercel ---
+.next/
+out/
+.vercel/
+
+# --- Expo / React Native / Android ---
+.expo/
+dist/
+web-build/
+android/app/build/
+android/.gradle/
+*.apk
+*.aab
+*.jks
+*.keystore
+credentials.json
+
+# --- Anchor / Rust ---
+target/
+.anchor/
+test-ledger/
+
+# --- Supabase local ---
+supabase/.temp/
+supabase/.branches/
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
