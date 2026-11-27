@@ -1,0 +1,30 @@
+/* Web Companion — PRD §8.3. Swiss / monochrome; tokens from globals.css. */
+.page { max-width: 1280px; margin: 0 auto; padding: 24px 16px 64px; }
+.header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--ink); padding-bottom: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+.brand { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin: 0; }
+.sub { color: var(--ink-muted); margin: 0; }
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+@media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
+.col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.h2 { font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: var(--ink-muted); margin: 0; }
+.card { border: 1px solid var(--line); padding: 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.label { font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: var(--ink-muted); }
+.mono { font-family: var(--font-mono); word-break: break-all; }
+.big { font-family: var(--font-mono); font-size: 32px; font-weight: 700; }
+.muted { color: var(--ink-muted); }
+.danger { color: var(--block); }
+.ok { color: var(--pass); }
+.row { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.bar { height: 4px; background: var(--line); }
+.fill { height: 4px; background: var(--ink); }
+.btn { min-height: 44px; padding: 0 16px; border: 1px solid var(--ink); background: var(--ink); color: var(--bg); font: inherit; font-weight: 600; cursor: pointer; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btnSecondary { composes: btn; background: var(--bg); color: var(--ink); }
+.btnDanger { composes: btn; background: var(--bg); color: var(--block); border-color: var(--block); }
+.input { border: 1px solid var(--line); padding: 8px; font-family: var(--font-mono); font-size: 14px; width: 100%; }
+.mic { width: 100%; aspect-ratio: 2 / 1; border: 2px solid var(--ink); background: var(--bg); color: var(--ink); font: inherit; font-size: 24px; font-weight: 700; cursor: pointer; user-select: none; touch-action: none; }
+.micActive { background: var(--ink); color: var(--bg); }
+.chip { align-self: flex-start; border: 1px solid currentColor; padding: 0 8px; font-weight: 700; font-size: 13px; }
+.feedRow { border: 1px solid var(--line); padding: 12px; display: flex; flex-direction: column; gap: 4px; }
+.walletList { display: flex; flex-direction: column; gap: 8px; }
+.col > p, .card > p { margin: 0; }
