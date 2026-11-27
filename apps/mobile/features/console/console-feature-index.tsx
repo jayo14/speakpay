@@ -20,7 +20,9 @@ import { formatError } from '@/utils/format-error'
 export function ConsoleFeatureIndex() {
   const { account } = useMobileWallet()
   const owner = account?.address.toBase58()
-  const vault = useVault(owner).data?.vault ?? null
+  const vaultQuery = useVault(owner)
+  const vault = vaultQuery.data?.vault ?? null
+  const vaultFundsLamports = vaultQuery.data?.vault_funds_lamports ?? 0
   const freezeTx = useOwnerAction()
   // T4: owner signs toggle_freeze(true) via MWA, then the server verifies it on-chain and logs FROZEN.
   const freeze = useMutation({
@@ -60,6 +62,12 @@ export function ConsoleFeatureIndex() {
 
   return (
     <View style={appStyles.stack}>
+      {vaultFundsLamports === 0 ? (
+        <View style={appStyles.card}>
+          <Text style={appStyles.label}>Vault unfunded</Text>
+          <Text style={appStyles.textDanger}>Deposit SOL on the Vault tab before running a voice payment.</Text>
+        </View>
+      ) : null}
       <Pressable
         accessibilityLabel="Hold to talk"
         accessibilityRole="button"
@@ -73,6 +81,12 @@ export function ConsoleFeatureIndex() {
         </Text>
       </Pressable>
       {talk.hint ? <Text style={appStyles.textMuted}>{talk.hint}</Text> : null}
+      <View style={appStyles.card}>
+        <Text style={appStyles.label}>Try saying</Text>
+        <Text style={appStyles.textMuted}>“Check the Dev3pack merchant page — if the Starter Plan is under 0.05 SOL, pay them.”</Text>
+        <Text style={appStyles.textMuted}>“Check the Shady Deals merchant page and pay for the discount plan.”</Text>
+        <Text style={appStyles.textMuted}>“Freeze my vault.”</Text>
+      </View>
       {command.isPending ? (
         <Text style={appStyles.textMuted}>Transcribing → verifying page → checking policy → on-chain</Text>
       ) : null}
