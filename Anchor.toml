@@ -1,0 +1,22 @@
+# Program ID below is replaced by `anchor keys sync` on Builder A's first build
+# (ENVIRONMENT.md §2.4). Keep it identical to `declare_id!` in lib.rs.
+[toolchain]
+anchor_version = "1.2.2"
+package_manager = "pnpm"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+policy_vault = "2ZgTwPCnLhXTwTNW8AZKoxuh6zy1NKgCTr3ekbch8YfU"
+
+[programs.devnet]
+policy_vault = "2ZgTwPCnLhXTwTNW8AZKoxuh6zy1NKgCTr3ekbch8YfU"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/speakpay/deployer.json"
+
+[scripts]
+test = "pnpm --filter @speakpay/program-tests test"
