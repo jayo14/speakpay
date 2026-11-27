@@ -19,6 +19,8 @@ export const copy = {
     };
     return `Rejected by Solana: ${why[errorName] ?? errorName}. No money moved.`;
   },
+  roguePassed: (lamports: number) =>
+    `That ${sol(lamports)} payment was inside your limits, so Solana allowed it.`,
   priceTooHigh: (price: number, max: number) =>
     `Not paid. The live price is ${price} SOL, above your limit of ${max} SOL.`,
   missingField: () => "I couldn't verify the price and wallet on that page, so I didn't pay.",
