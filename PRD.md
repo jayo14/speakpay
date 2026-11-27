@@ -198,9 +198,10 @@ speakpay/
 │   └── lib/                        # elevenlabs.ts firecrawl.ts intent.ts solana.ts
 │                                   # supabase-server.ts tts-copy.ts
 │                                   # (evidence hash lives in packages/shared/src/evidence.ts)
-├── apps/mobile/                    # Expo custom dev build (create-solana-dapp, Solana Mobile template)
-│   ├── app/                        # screens: vault, console, feed
-│   └── src/                        # mwa.ts api.ts supabase.ts audio.ts
+├── apps/mobile/                    # Expo SDK 58 custom dev build (create-solana-dapp: expo-web3js-minimal)
+│   ├── app/(tabs)/                 # expo-router screens: index (Vault), console, feed
+│   ├── components/ constants/      # providers (MobileWalletProvider), env config, Swiss tokens
+│   └── features/                   # account/ (MWA connect, sign) vault/ console/ feed/ — api, audio, supabase live here
 ├── supabase/migrations/001_init.sql
 ├── docs/architecture.excalidraw    # + exported PNG for README
 ├── pnpm-workspace.yaml             # apps/*, packages/*
@@ -674,7 +675,8 @@ paragraph containing the injection text (§5.4).
 | D9 | **Rogue sim uses `skipPreflight: true`** | Let RPC simulation reject | A preflight rejection never lands on-chain → no Explorer proof. Skipping preflight makes the validator execute and record the failed tx with `PolicyError`. | Delegate pays a real fee (~5000 lamports) per rogue test. |
 | D10 | **Fixed check order in `execute_guarded_transfer`** | Any order | Deterministic error codes for the demo and tests. | None. |
 | D11 | **Supabase public-read RLS, service-role writes** | Auth per wallet | Wallet pubkey = identity; no auth UI; audit transparency is a feature. | Transcripts are public — disclosed in-app. |
-| D12 | **Audio library: whatever the scaffold's Expo SDK supports** — `expo-audio` (SDK ≥ 53) preferred, `expo-av` only if the template pins an SDK where it still ships | Hard-require `expo-av` | `expo-av` is deprecated and removed in recent SDKs; fighting the template wastes hours. Both record m4a and play base64 MP3 data URIs. | Builder B confirms at Hour 1 and records the choice in `AGENTS.md` §Decisions. |
+| D12 | **Audio library: `expo-audio`** (resolved at scaffold: template is Expo SDK 58, where `expo-av` no longer ships) | `expo-av` | `expo-av` is removed in recent SDKs; `expo-audio` records m4a and plays base64 MP3 data URIs. | None. |
+| D15 | **MWA via `@wallet-ui/react-native-web3js`** (`useMobileWallet()` → `connect`, `signMessages`, `signAndSendTransactions`), as shipped by the Solana Mobile template | Raw `@solana-mobile/mobile-wallet-adapter-protocol` `transact()` | It wraps MWA `transact()` with auth caching; zero setup. | README map points at our call sites, not `transact(` literally. |
 | D13 | **One shared delegate keypair** for all vaults | Per-vault delegates | Simplest ops; each vault binds the delegate pubkey at init and the owner can rotate it via `update_policy`. | A leaked delegate key affects all vaults — each still bounded by its own policy and freeze. |
 | D14 | **`maxAge: 0` on Firecrawl** | Default cache | Proves every scrape is live; avoids a cached pre-fixture result masking the 403. | Each scrape is a full fetch (2–4 s). |
 
