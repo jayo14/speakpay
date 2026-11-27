@@ -1,7 +1,7 @@
 "use client";
 
 import { PublicKey } from "@solana/web3.js";
-import { DEMO_POLICY, explorerAddressUrl, explorerTxUrl, lamportsToSol, type VaultReadResponse } from "@speakpay/shared";
+import { DEMO_POLICY, explorerAddressUrl, explorerTxUrl, lamportsToSol, solToLamports, type VaultReadResponse } from "@speakpay/shared";
 import { useEffect, useState } from "react";
 
 import s from "../dashboard.module.css";
@@ -26,6 +26,158 @@ function useNow() {
   return now;
 }
 
+function parsePolicyInputs(maxSolStr: string, dailySolStr: string, cooldownStr: string, allowStr: string) {
+  const maxSol = Number(maxSolStr);
+  const dailySol = Number(dailySolStr);
+  const cooldown = Number(cooldownStr);
+  const allowTrimmed = allowStr.trim();
+  const allowOk = allowTrimmed === "" || isPubkey(allowTrimmed);
+  const valid =
+    Number.isFinite(maxSol) &&
+    maxSol > 0 &&
+    Number.isFinite(dailySol) &&
+    dailySol >= maxSol &&
+    Number.isInteger(cooldown) &&
+    cooldown >= 0 &&
+    allowOk;
+  return {
+    valid,
+    allowOk,
+    maxPerTxLamports: valid ? solToLamports(maxSol) : 0,
+    dailyCapLamports: valid ? solToLamports(dailySol) : 0,
+    cooldownSecs: valid ? cooldown : 0,
+    allowlist: allowTrimmed ? [allowTrimmed] : [],
+  };
+}
+
+function CreateVaultForm({
+  action,
+  demoAllowlist,
+}: {
+  action: ReturnType<typeof useOwnerAction>;
+  demoAllowlist: string;
+}) {
+  const [maxPerTx, setMaxPerTx] = useState(String(lamportsToSol(DEMO_POLICY.maxPerTxLamports)));
+  const [dailyCap, setDailyCap] = useState(String(lamportsToSol(DEMO_POLICY.dailyCapLamports)));
+  const [cooldownSecs, setCooldownSecs] = useState(String(DEMO_POLICY.cooldownSecs));
+  const [allow, setAllow] = useState(demoAllowlist);
+  const parsed = parsePolicyInputs(maxPerTx, dailyCap, cooldownSecs, allow);
+
+  return (
+    <div className={s.card}>
+      <span className={s.label}>Create your vault</span>
+      <p className={s.muted}>Set hard spending limits enforced by Solana. Demo defaults are pre-filled.</p>
+      <div className={s.fieldGrid}>
+        <div>
+          <label className={s.label} htmlFor="init-max">Max / tx (SOL)</label>
+          <input className={s.input} id="init-max" inputMode="decimal" onChange={(e) => setMaxPerTx(e.target.value)} value={maxPerTx} />
+        </div>
+        <div>
+          <label className={s.label} htmlFor="init-daily">Daily cap (SOL)</label>
+          <input className={s.input} id="init-daily" inputMode="decimal" onChange={(e) => setDailyCap(e.target.value)} value={dailyCap} />
+        </div>
+        <div>
+          <label className={s.label} htmlFor="init-cd">Cooldown (s)</label>
+          <input className={s.input} id="init-cd" inputMode="numeric" onChange={(e) => setCooldownSecs(e.target.value)} value={cooldownSecs} />
+        </div>
+      </div>
+      <label className={s.label} htmlFor="allow">
+        Allowlisted merchant wallet (optional)
+      </label>
+      <input
+        className={s.input}
+        id="allow"
+        onChange={(e) => setAllow(e.target.value)}
+        placeholder="Empty = any recipient"
+        style={parsed.allowOk ? undefined : { borderColor: "var(--block)" }}
+        value={allow}
+      />
+      <button
+        className={s.btn}
+        disabled={action.busy || !parsed.valid}
+        onClick={() =>
+          void action.run({
+            action: "init",
+            params: {
+              max_per_tx_lamports: parsed.maxPerTxLamports,
+              daily_cap_lamports: parsed.dailyCapLamports,
+              cooldown_secs: parsed.cooldownSecs,
+              allowlist: parsed.allowlist,
+            },
+          })
+        }
+        type="button"
+      >
+        {action.busy ? "Waiting for wallet…" : "Create vault"}
+      </button>
+      {!parsed.valid ? <p className={s.danger}>Ensure 0 &lt; max/tx ≤ daily cap, cooldown ≥ 0, and allowlist is valid.</p> : null}
+      {action.error ? <p className={s.danger}>{action.error}</p> : null}
+    </div>
+  );
+}
+
+function EditPolicyForm({
+  vault,
+  action,
+}: {
+  vault: NonNullable<VaultReadResponse["vault"]>;
+  action: ReturnType<typeof useOwnerAction>;
+}) {
+  const [maxPerTx, setMaxPerTx] = useState(String(lamportsToSol(vault.max_per_tx_lamports)));
+  const [dailyCap, setDailyCap] = useState(String(lamportsToSol(vault.daily_cap_lamports)));
+  const [cooldownSecs, setCooldownSecs] = useState(String(vault.cooldown_secs));
+  const [allow, setAllow] = useState(vault.allowlist[0] ?? "");
+  const parsed = parsePolicyInputs(maxPerTx, dailyCap, cooldownSecs, allow);
+
+  return (
+    <details className={s.details}>
+      <summary className={s.summary}>Edit policy</summary>
+      <div className={s.fieldGrid}>
+        <div>
+          <label className={s.label} htmlFor="edit-max">Max / tx (SOL)</label>
+          <input className={s.input} id="edit-max" inputMode="decimal" onChange={(e) => setMaxPerTx(e.target.value)} value={maxPerTx} />
+        </div>
+        <div>
+          <label className={s.label} htmlFor="edit-daily">Daily cap (SOL)</label>
+          <input className={s.input} id="edit-daily" inputMode="decimal" onChange={(e) => setDailyCap(e.target.value)} value={dailyCap} />
+        </div>
+        <div>
+          <label className={s.label} htmlFor="edit-cd">Cooldown (s)</label>
+          <input className={s.input} id="edit-cd" inputMode="numeric" onChange={(e) => setCooldownSecs(e.target.value)} value={cooldownSecs} />
+        </div>
+      </div>
+      <label className={s.label} htmlFor="edit-allow">Allowlisted merchant wallet (optional)</label>
+      <input
+        className={s.input}
+        id="edit-allow"
+        onChange={(e) => setAllow(e.target.value)}
+        placeholder="Empty = any recipient"
+        style={parsed.allowOk ? undefined : { borderColor: "var(--block)" }}
+        value={allow}
+      />
+      <button
+        className={s.btnSecondary}
+        disabled={action.busy || !parsed.valid}
+        onClick={() =>
+          void action.run({
+            action: "update_policy",
+            params: {
+              max_per_tx_lamports: parsed.maxPerTxLamports,
+              daily_cap_lamports: parsed.dailyCapLamports,
+              cooldown_secs: parsed.cooldownSecs,
+              allowlist: parsed.allowlist,
+              agent_delegate: vault.agent_delegate,
+            },
+          })
+        }
+        type="button"
+      >
+        {action.busy ? "Waiting for wallet…" : "Save policy"}
+      </button>
+    </details>
+  );
+}
+
 // Vault card + owner actions (PRD §8.3 left column). All values are a live chain read.
 export function VaultPanel({
   data,
@@ -37,53 +189,13 @@ export function VaultPanel({
   demoAllowlist: string;
 }) {
   const action = useOwnerAction(onChanged);
-  const [allow, setAllow] = useState(demoAllowlist);
   const now = useNow();
 
   if (!data) return null;
   const v = data.vault;
 
   if (!v) {
-    const allowOk = allow === "" || isPubkey(allow.trim());
-    return (
-      <div className={s.card}>
-        <span className={s.label}>Create your vault</span>
-        <p>
-          Max {lamportsToSol(DEMO_POLICY.maxPerTxLamports)} SOL per payment · {lamportsToSol(DEMO_POLICY.dailyCapLamports)} SOL
-          per day · {DEMO_POLICY.cooldownSecs}s cooldown
-        </p>
-        <label className={s.label} htmlFor="allow">
-          Allowlisted merchant wallet (optional)
-        </label>
-        <input
-          className={s.input}
-          id="allow"
-          onChange={(e) => setAllow(e.target.value)}
-          placeholder="Empty = any recipient"
-          style={allowOk ? undefined : { borderColor: "var(--block)" }}
-          value={allow}
-        />
-        <button
-          className={s.btn}
-          disabled={action.busy || !allowOk}
-          onClick={() =>
-            void action.run({
-              action: "init",
-              params: {
-                max_per_tx_lamports: DEMO_POLICY.maxPerTxLamports,
-                daily_cap_lamports: DEMO_POLICY.dailyCapLamports,
-                cooldown_secs: DEMO_POLICY.cooldownSecs,
-                allowlist: allow.trim() ? [allow.trim()] : [],
-              },
-            })
-          }
-          type="button"
-        >
-          {action.busy ? "Waiting for wallet…" : "Create vault"}
-        </button>
-        {action.error ? <p className={s.danger}>{action.error}</p> : null}
-      </div>
-    );
+    return <CreateVaultForm action={action} demoAllowlist={demoAllowlist} />;
   }
 
   const windowOpen = now - v.window_start_ts < 86_400;
@@ -142,6 +254,11 @@ export function VaultPanel({
       >
         Withdraw all
       </button>
+      <EditPolicyForm
+        action={action}
+        key={`${v.vault_pda}:${v.max_per_tx_lamports}:${v.daily_cap_lamports}:${v.cooldown_secs}:${v.allowlist.join(",")}`}
+        vault={v}
+      />
       {action.error ? <p className={s.danger}>{action.error}</p> : null}
       {action.signature ? (
         <a className={s.ok} href={explorerTxUrl(action.signature)} rel="noreferrer" target="_blank">

@@ -28,3 +28,11 @@
 .feedRow { border: 1px solid var(--line); padding: 12px; display: flex; flex-direction: column; gap: 4px; }
 .walletList { display: flex; flex-direction: column; gap: 8px; }
 .col > p, .card > p { margin: 0; }
+.steps { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.step { border: 1px solid var(--line); padding: 6px 12px; font-size: 13px; color: var(--ink-muted); }
+.stepActive { border-color: var(--ink); color: var(--ink); font-weight: 700; }
+.stepDone { border-color: var(--pass); color: var(--pass); }
+.fieldGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 600px) { .fieldGrid { grid-template-columns: 1fr; } }
+.details { border: 1px solid var(--line); padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.summary { cursor: pointer; font-weight: 600; font-size: 14px; }

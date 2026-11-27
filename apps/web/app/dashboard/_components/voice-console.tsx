@@ -23,7 +23,17 @@ function pickMime(): string {
 }
 
 // Browser voice console (PRD §8.3 centre): hold to talk → same /api/voice-command as the APK.
-export function VoiceConsole({ vaultPda, owner, onRun }: { vaultPda: string; owner: string; onRun: () => void }) {
+export function VoiceConsole({
+  vaultPda,
+  owner,
+  vaultFundsLamports,
+  onRun,
+}: {
+  vaultPda: string;
+  owner: string;
+  vaultFundsLamports: number;
+  onRun: () => void;
+}) {
   const rec = useRef<MediaRecorder | null>(null);
   const chunks = useRef<Blob[]>([]);
   const startedAt = useRef(0);
@@ -123,6 +133,12 @@ export function VoiceConsole({ vaultPda, owner, onRun }: { vaultPda: string; own
 
   return (
     <div className={s.col}>
+      {vaultFundsLamports === 0 ? (
+        <div className={s.card}>
+          <span className={s.label}>Vault unfunded</span>
+          <p className={s.danger}>Deposit SOL into your vault on the left before running a voice payment.</p>
+        </div>
+      ) : null}
       <button
         aria-label="Hold to talk"
         className={`${s.mic} ${recording ? s.micActive : ""}`}
@@ -142,6 +158,12 @@ export function VoiceConsole({ vaultPda, owner, onRun }: { vaultPda: string; own
         {recording ? "Listening…" : busy ? "Working…" : "Hold to talk"}
       </button>
       <span className={s.muted}>Hold the button (or Space) and speak. Release to send.</span>
+      <div className={s.card}>
+        <span className={s.label}>Try saying</span>
+        <p className={s.muted}>“Check the Dev3pack merchant page — if the Starter Plan is under 0.05 SOL, pay them.”</p>
+        <p className={s.muted}>“Check the Shady Deals merchant page and pay for the discount plan.”</p>
+        <p className={s.muted}>“Freeze my vault.”</p>
+      </div>
       {busy ? <span className={s.muted}>Transcribing → verifying page → checking policy → on-chain</span> : null}
       {hint ? <span className={s.danger}>{hint}</span> : null}
 
