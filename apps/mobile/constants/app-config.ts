@@ -19,6 +19,8 @@ export const AppConfig = {
   ),
   supabaseUrl: env('EXPO_PUBLIC_SUPABASE_URL', process.env.EXPO_PUBLIC_SUPABASE_URL),
   supabaseAnonKey: env('EXPO_PUBLIC_SUPABASE_ANON_KEY', process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY),
+  // Optional: prefills the demo allowlist (PRD §2). Public address, not a secret.
+  merchantCleanWallet: process.env.EXPO_PUBLIC_MERCHANT_CLEAN_WALLET?.trim() ?? '',
   // Devnet only (AGENTS.md §5.4).
   network: {
     id: 'solana:devnet',
