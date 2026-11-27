@@ -48,8 +48,8 @@ export function Dashboard({ readOnlyVault, demoAllowlist }: { readOnlyVault: str
       ) : null}
 
       {readOnlyVault ? (
-        <section className={s.col} aria-label="Audit feed">
-          <h2 className={s.h2}>Audit feed</h2>
+        <section className={s.col} aria-label="Activity">
+          <h2 className={s.h2}>Activity</h2>
           <AuditFeed vaultPda={readOnlyVault} />
         </section>
       ) : (
@@ -61,8 +61,8 @@ export function Dashboard({ readOnlyVault, demoAllowlist }: { readOnlyVault: str
             {vault.error ? <span className={s.danger}>{vault.error}</span> : null}
             {owner ? <VaultPanel data={vault.data} demoAllowlist={demoAllowlist} onChanged={vault.refresh} /> : null}
           </section>
-          <section className={s.col} aria-label="Voice console">
-            <h2 className={s.h2}>Voice console</h2>
+          <section className={s.col} aria-label="Speak">
+            <h2 className={s.h2}>Speak</h2>
             {owner && vault.data?.vault ? (
               <VoiceConsole
                 onRun={vault.refresh}
@@ -74,8 +74,8 @@ export function Dashboard({ readOnlyVault, demoAllowlist }: { readOnlyVault: str
               <span className={s.muted}>Connect a wallet and create a vault first.</span>
             )}
           </section>
-          <section className={s.col} aria-label="Audit feed">
-            <h2 className={s.h2}>Audit feed</h2>
+          <section className={s.col} aria-label="Activity">
+            <h2 className={s.h2}>Activity</h2>
             <AuditFeed vaultPda={vaultPda} />
           </section>
         </div>

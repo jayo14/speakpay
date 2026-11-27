@@ -1,4 +1,4 @@
-# SpeakPay — talk to pay, inside limits the AI can't break
+# SpeakPay — speak to pay, inside limits the AI can't break
 
 SpeakPay is a voice-first Solana Mobile payment agent. You hold the mic and say what you want to pay
 for. SpeakPay reads the live merchant page through **Firecrawl**, which blocks prompt-injection traps
@@ -35,7 +35,7 @@ Pinned to commit [`572eb73`](https://github.com/jayo14/speakpay/tree/572eb73eab9
 ## How it works
 
 ```
-Phone (Expo APK, MWA) ──hold to talk──► Next.js API on Vercel
+Phone (Expo APK, MWA) ──hold to speak─► Next.js API on Vercel
   owner signs: create / deposit /         1. ElevenLabs STT (Scribe)
   freeze / withdraw (one tap each)        2. intent grammar (transcript only)
                                           3. Firecrawl /v2/scrape + checkPromptInjection

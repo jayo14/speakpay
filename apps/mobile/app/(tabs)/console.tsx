@@ -7,7 +7,7 @@ export default function ConsoleScreen() {
   return (
     <SafeAreaView style={appStyles.screen}>
       <ScrollView contentContainerStyle={appStyles.stack}>
-        <Text style={appStyles.title}>Console</Text>
+        <Text style={appStyles.title}>Speak</Text>
         <ConsoleFeatureIndex />
       </ScrollView>
     </SafeAreaView>

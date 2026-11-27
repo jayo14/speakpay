@@ -47,7 +47,7 @@ export function FeedFeatureIndex() {
       <Text style={{ color: feed.live ? colors.pass : colors.inkMuted }}>{feed.live ? '● Live' : '○ Connecting…'}</Text>
       {feed.error ? <Text style={appStyles.textDanger}>{feed.error}</Text> : null}
       {feed.rows.length === 0 && !feed.error ? (
-        <Text style={appStyles.textMuted}>No runs yet. Speak a command on the Console tab.</Text>
+        <Text style={appStyles.textMuted}>No runs yet. Hold to speak on the Speak tab.</Text>
       ) : null}
       <Text style={appStyles.textMuted}>Voice transcripts are stored publicly for this Devnet demo.</Text>
       {feed.rows.map((r) => (

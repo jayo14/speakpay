@@ -7,7 +7,7 @@ export default function FeedScreen() {
   return (
     <SafeAreaView style={appStyles.screen}>
       <ScrollView contentContainerStyle={appStyles.stack}>
-        <Text style={appStyles.title}>Feed</Text>
+        <Text style={appStyles.title}>Activity</Text>
         <FeedFeatureIndex />
       </ScrollView>
     </SafeAreaView>

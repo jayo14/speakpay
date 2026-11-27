@@ -239,7 +239,7 @@ export function VaultFeatureIndex() {
           <Text style={appStyles.text}>Your Devnet wallet is your account — no signup needed.</Text>
           <Text style={appStyles.textMuted}>1. Connect Phantom or Solflare (Devnet)</Text>
           <Text style={appStyles.textMuted}>2. Create & fund your on-chain vault</Text>
-          <Text style={appStyles.textMuted}>3. Hold the mic on Console to pay</Text>
+          <Text style={appStyles.textMuted}>3. Hold to speak on the Speak tab to pay</Text>
         </View>
         <AccountFeatureConnect />
         <Pressable onPress={() => void WebBrowser.openBrowserAsync('https://faucet.solana.com')}>

@@ -22,7 +22,7 @@ function pickMime(): string {
   return "";
 }
 
-// Browser voice console (PRD §8.3 centre): hold to talk → same /api/voice-command as the APK.
+// Browser voice console (PRD §8.3 centre): hold to speak → same /api/voice-command as the APK.
 export function VoiceConsole({
   vaultPda,
   owner,
@@ -140,7 +140,7 @@ export function VoiceConsole({
         </div>
       ) : null}
       <button
-        aria-label="Hold to talk"
+        aria-label="Hold to speak"
         className={`${s.mic} ${recording ? s.micActive : ""}`}
         disabled={busy}
         onKeyDown={(e) => {
@@ -155,7 +155,7 @@ export function VoiceConsole({
         onPointerUp={stop}
         type="button"
       >
-        {recording ? "Listening…" : busy ? "Working…" : "Hold to talk"}
+        {recording ? "Listening…" : busy ? "Working…" : "Hold to speak"}
       </button>
       <span className={s.muted}>Hold the button (or Space) and speak. Release to send.</span>
       <div className={s.card}>

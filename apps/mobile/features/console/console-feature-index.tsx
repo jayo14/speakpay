@@ -16,7 +16,7 @@ import { useOwnerAction, useVault } from '@/features/vault/use-vault'
 import { ellipsify } from '@/utils/ellipsify'
 import { formatError } from '@/utils/format-error'
 
-// Voice console (PRD §8.2 Screen 2): hold to talk → /api/voice-command → verdict + TTS.
+// Speak screen (PRD §8.2 Screen 2): hold to speak → /api/voice-command → verdict + TTS.
 export function ConsoleFeatureIndex() {
   const { account } = useMobileWallet()
   const owner = account?.address.toBase58()
@@ -69,7 +69,7 @@ export function ConsoleFeatureIndex() {
         </View>
       ) : null}
       <Pressable
-        accessibilityLabel="Hold to talk"
+        accessibilityLabel="Hold to speak"
         accessibilityRole="button"
         disabled={command.isPending}
         onPressIn={() => void talk.start()}
@@ -77,7 +77,7 @@ export function ConsoleFeatureIndex() {
         style={[styles.mic, talk.recording && styles.micActive, command.isPending && { opacity: 0.5 }]}
       >
         <Text style={[styles.micLabel, talk.recording && { color: colors.bg }]}>
-          {talk.recording ? 'Listening…' : command.isPending ? 'Working…' : 'Hold to talk'}
+          {talk.recording ? 'Listening…' : command.isPending ? 'Working…' : 'Hold to speak'}
         </Text>
       </Pressable>
       {talk.hint ? <Text style={appStyles.textMuted}>{talk.hint}</Text> : null}

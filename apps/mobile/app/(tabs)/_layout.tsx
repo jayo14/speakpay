@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router'
 import { colors } from '@/constants/app-styles'
 
-// PRD §8.2: Vault / Console / Feed. No landing page.
+// PRD §8.2: Vault / Speak / Activity — same names on web. No landing page.
 export default function TabsLayout() {
   return (
     <Tabs
@@ -15,8 +15,8 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen name="index" options={{ title: 'Vault' }} />
-      <Tabs.Screen name="console" options={{ title: 'Console' }} />
-      <Tabs.Screen name="feed" options={{ title: 'Feed' }} />
+      <Tabs.Screen name="console" options={{ title: 'Speak' }} />
+      <Tabs.Screen name="feed" options={{ title: 'Activity' }} />
     </Tabs>
   )
 }
