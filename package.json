@@ -1,0 +1,28 @@
+{
+  "name": "speakpay",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build:program": "anchor build",
+    "test:program": "anchor test",
+    "test:program:host": "cargo test -p policy-vault",
+    "deploy:program": "anchor deploy --provider.cluster devnet",
+    "idl:sync": "node scripts/idl-sync.mjs",
+    "dev:web": "pnpm --filter @speakpay/web dev",
+    "build:web": "pnpm --filter @speakpay/web build",
+    "dev:mobile": "pnpm --filter @speakpay/mobile exec expo start --dev-client",
+    "android": "pnpm --filter @speakpay/mobile exec expo run:android",
+    "apk": "pnpm --filter @speakpay/mobile exec eas build -p android --profile preview",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "pnpm -r --if-present lint && cargo clippy -p policy-vault -- -D warnings",
+    "test": "pnpm -r --if-present test",
+    "db:push": "supabase db push",
+    "verify": "pnpm typecheck && pnpm lint && pnpm test:program && pnpm build:web"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3"
+  }
+}
