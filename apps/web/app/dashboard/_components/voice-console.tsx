@@ -1,13 +1,16 @@
 "use client";
 
-import { explorerTxUrl, lamportsToSol, type VoiceCommandResponse } from "@speakpay/shared";
+import { explorerTxUrl, lamportsToSol, type AuditFreezeResponse, type VoiceCommandResponse } from "@speakpay/shared";
 import { useCallback, useRef, useState } from "react";
 
-import { apiPostForm, errorText } from "@/lib/client/api";
+import { apiPost, apiPostForm, errorText } from "@/lib/client/api";
 
 import s from "../dashboard.module.css";
 import { StatusChip, short } from "./status-chip";
+import { playTts } from "./play-tts";
+import { RoguePanel } from "./rogue-panel";
 import { useOwnerAction } from "./use-vault";
+import { VerifyBadge } from "./verify-badge";
 
 const MIN_MS = 700;
 const MAX_MS = 15_000;
@@ -17,11 +20,6 @@ function pickMime(): string {
     if (typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(m)) return m;
   }
   return "";
-}
-
-export function playTts(base64: string | null) {
-  if (!base64) return;
-  void new Audio(`data:audio/mpeg;base64,${base64}`).play().catch(() => undefined);
 }
 
 // Browser voice console (PRD §8.3 centre): hold to talk → same /api/voice-command as the APK.
@@ -35,6 +33,30 @@ export function VoiceConsole({ vaultPda, owner, onRun }: { vaultPda: string; own
   const [hint, setHint] = useState<string | null>(null);
   const [result, setResult] = useState<VoiceCommandResponse | null>(null);
   const freeze = useOwnerAction(onRun);
+  const [frozenNote, setFrozenNote] = useState<string | null>(null);
+  const [freezeError, setFreezeError] = useState<string | null>(null);
+
+  // T4: owner signs toggle_freeze(true) in the wallet, then the server verifies it on-chain and logs FROZEN.
+  const approveFreeze = useCallback(
+    async (parentRunId: string) => {
+      setFreezeError(null);
+      const sig = await freeze.run({ action: "toggle_freeze", params: { frozen: true } });
+      if (!sig) return;
+      try {
+        const r = await apiPost<AuditFreezeResponse>("/api/audit/freeze", {
+          vault_pda: vaultPda,
+          tx_signature: sig,
+          client: "web",
+          ...(parentRunId ? { parent_run_id: parentRunId } : {}),
+        });
+        setFrozenNote(r.speech_text);
+        playTts(r.tts_audio_base64);
+      } catch (e) {
+        setFreezeError(errorText(e));
+      }
+    },
+    [freeze, vaultPda],
+  );
 
   const upload = useCallback(
     async (blob: Blob) => {
@@ -48,7 +70,10 @@ export function VoiceConsole({ vaultPda, owner, onRun }: { vaultPda: string; own
         form.append("client", "web");
         const r = await apiPostForm<VoiceCommandResponse>("/api/voice-command", form);
         setResult(r);
+        setFrozenNote(null);
         playTts(r.tts_audio_base64);
+        // Voice kill switch: open the wallet straight away (PRD §2, 1:30).
+        if (r.next_action === "sign_freeze") void approveFreeze(r.run_id);
       } catch (e) {
         setHint(errorText(e));
       } finally {
@@ -56,7 +81,7 @@ export function VoiceConsole({ vaultPda, owner, onRun }: { vaultPda: string; own
         onRun();
       }
     },
-    [vaultPda, owner, onRun],
+    [vaultPda, owner, onRun, approveFreeze],
   );
 
   const stop = useCallback(() => {
@@ -144,6 +169,7 @@ export function VoiceConsole({ vaultPda, owner, onRun }: { vaultPda: string; own
             </span>
           ) : null}
           {result.evidence_hash ? <span className={s.mono}>Evidence {short(result.evidence_hash, 10)}</span> : null}
+          {result.status === "PASSED" && result.run_id ? <VerifyBadge runId={result.run_id} /> : null}
           {result.tx_signature ? (
             <a className={s.ok} href={explorerTxUrl(result.tx_signature)} rel="noreferrer" target="_blank">
               Tx {short(result.tx_signature, 8)} ↗
@@ -157,16 +183,18 @@ export function VoiceConsole({ vaultPda, owner, onRun }: { vaultPda: string; own
             <button
               className={s.btn}
               disabled={freeze.busy}
-              onClick={() => void freeze.run({ action: "toggle_freeze", params: { frozen: true } })}
+              onClick={() => void approveFreeze(result.run_id)}
               type="button"
             >
               {freeze.busy ? "Waiting for wallet…" : "Approve freeze in wallet"}
             </button>
           ) : null}
-          {freeze.signature ? <span style={{ color: "var(--frozen)" }}>Vault frozen on-chain.</span> : null}
-          {freeze.error ? <span className={s.danger}>{freeze.error}</span> : null}
+          {frozenNote ? <span style={{ color: "var(--frozen)" }}>{frozenNote}</span> : null}
+          {freeze.error || freezeError ? <span className={s.danger}>{freeze.error ?? freezeError}</span> : null}
         </div>
       ) : null}
+
+      <RoguePanel onRun={onRun} vaultPda={vaultPda} />
     </div>
   );
 }
