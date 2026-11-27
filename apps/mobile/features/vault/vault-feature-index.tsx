@@ -10,6 +10,7 @@ import { appStyles, colors } from '@/constants/app-styles'
 import { AccountFeatureConnect } from '@/features/account/account-feature-connect'
 import { AccountFeatureDisconnect } from '@/features/account/account-feature-disconnect'
 import { AccountFeatureGetBalance } from '@/features/account/account-feature-get-balance'
+import { ReadinessCard } from '@/features/vault/readiness-card'
 import { useOwnerAction, useVault } from '@/features/vault/use-vault'
 import { VaultUiCard } from '@/features/vault/vault-ui-card'
 import { ellipsify } from '@/utils/ellipsify'
@@ -105,6 +106,7 @@ export function VaultFeatureIndex() {
       {data?.vault ? (
         <>
           <VaultUiCard fundsLamports={data.vault_funds_lamports} vault={data.vault} />
+          <ReadinessCard data={data} />
           <AppButton
             busy={action.isPending}
             onPress={() => run({ action: 'deposit', params: { amount_lamports: DEMO_POLICY.depositLamports } })}
