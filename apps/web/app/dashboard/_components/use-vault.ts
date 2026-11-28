@@ -71,7 +71,15 @@ export function useOwnerAction(onDone: () => void) {
         setSignature(sig);
         return sig;
       } catch (e) {
-        setError(errorText(e));
+        const msg = errorText(e);
+        if (!/rejected/i.test(msg)) {
+          const bal = await connection.getBalance(publicKey).catch(() => null);
+          if (bal === 0) {
+            setError("Your wallet has 0 SOL on Solana Devnet. Get test SOL at faucet.solana.com and switch your wallet to Devnet.");
+            return null;
+          }
+        }
+        setError(msg);
         return null;
       } finally {
         setBusy(false);
