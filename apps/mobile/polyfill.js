@@ -9,7 +9,7 @@ if (typeof globalThis.Buffer === 'undefined') {
 }
 
 // react-native-quick-crypto requires native QuickBase64 (present in custom dev client / APK, absent in Expo Go).
-if (TurboModuleRegistry.get('QuickBase64')) {
+if (TurboModuleRegistry?.get?.('QuickBase64')) {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   require('react-native-quick-crypto').install()
 }

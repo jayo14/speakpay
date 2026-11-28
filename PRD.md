@@ -55,7 +55,7 @@ payouts on mobile.** Canonical command:
 
 | Audience | Plain English | Technical |
 |---|---|---|
-| User | "Talk to pay. It can't overspend, even if hacked." | Owner/delegate key split; validator-enforced policy in a PDA. |
+| User | "Speak to pay. It can't overspend, even if hacked." | Owner/delegate key split; validator-enforced policy in a PDA. |
 | Security-minded judge | "The guardrail is the blockchain, not a system prompt." | `execute_guarded_transfer` reverts with `PolicyError::*`; failed tx is visible on Explorer. |
 | Firecrawl | "Poisoned pages never reach the agent." | `/v2/scrape` with top-level `checkPromptInjection: true`; HTTP 403 halts the pipeline at Layer 1. |
 | ElevenLabs | "The whole loop is voice: in and out." | Scribe (`scribe_v3`) STT with crypto keyterms; `eleven_flash_v2_5` TTS verdicts. |
@@ -109,7 +109,7 @@ fresh vault), `/merchants/shady` re-verified to 403 within the last hour.
 │      │                              │  withdraw_all  (unsigned tx built by    │
 │      │                              │  POST /api/tx/owner)                    │
 │  [Hold-to-Talk] ─ expo audio rec (.m4a) ─┐                                    │
-│  [Audit Feed] ◄── Supabase Realtime ─────┼─────────────────────────┐          │
+│  [Activity]   ◄── Supabase Realtime ─────┼─────────────────────────┐          │
 │  [Rogue Agent btn]                       │                         │          │
 └──────────────────────────────────────────┼─────────────────────────┼──────────┘
                                            │ HTTPS multipart         │ WSS
@@ -624,8 +624,8 @@ different navigator, keep its structure and map these screens onto it (record in
   MWA `signAndSendTransactions` → `POST /api/vault/sync`.
 - State source: `GET /api/vault/[owner]` on focus + after every tx.
 
-**Screen 2 — Voice Console** (`app/(tabs)/console.tsx`, default tab once vault exists)
-- Large hold-to-talk button (press-in = start recording, release = stop & upload).
+**Screen 2 — Speak** (`app/(tabs)/console.tsx`, default tab once vault exists)
+- Large "Hold to speak" button (press-in = start recording, release = stop & upload).
   Max 15 s; < 0.7 s = discarded with "Hold to speak".
 - Pipeline stepper: `Listening → Transcribing → Verifying page → Checking policy → On-chain → Done`.
 - Result card: transcript, merchant/plan/price, verdict chip, evidence hash
@@ -636,7 +636,7 @@ different navigator, keep its structure and map these screens onto it (record in
 - Two secondary buttons (clearly labelled *Security Test*): *Simulate Rogue Agent
   — 0.5 SOL* and *— 0.01 SOL*.
 
-**Screen 3 — Audit Feed** (`app/(tabs)/feed.tsx`)
+**Screen 3 — Activity** (`app/(tabs)/feed.tsx`)
 - Initial `select` of last 50 `audit_runs` for the vault, then Realtime INSERTs prepend.
 - Row: status chip, time, kind, amount, short hash, short signature. Tap → detail
   with full scraped JSON, preimage fields, verify button.
@@ -645,8 +645,8 @@ different navigator, keep its structure and map these screens onto it (record in
 
 Left column: Wallet Adapter connect (Phantom/Solflare browser extension, Devnet),
 vault card + owner actions (same `/api/tx/owner` flow, signed with `sendTransaction`).
-Centre: Voice Console using browser `MediaRecorder` (`audio/webm`) → same
-`/api/voice-command`; rogue buttons. Right: live Audit Feed (Realtime).
+Centre: Speak (voice) panel using browser `MediaRecorder` (`audio/webm`) → same
+`/api/voice-command`; rogue buttons. Right: live Activity feed (Realtime).
 Read-only mode: `/dashboard?vault=<pda>` shows the feed without a wallet — used
 on the second screen during the demo to show phone actions landing live.
 

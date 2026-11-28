@@ -1,21 +1,31 @@
-import type { RunStatus } from "@speakpay/shared";
+import { Check, ShieldX, TriangleAlert } from "lucide-react";
+import type { ReactNode } from "react";
+
+import type { Tone } from "@/lib/client/describe-run";
 
 import s from "../dashboard.module.css";
+import { IceCube } from "./ice-cube";
 
-const TONE: Record<RunStatus, string> = {
-  PASSED: "var(--pass)",
-  INJECTION_BLOCKED: "var(--block)",
-  ONCHAIN_REJECTED: "var(--block)",
-  PRECHECK_FAILED: "var(--block)",
-  ERROR: "var(--block)",
-  FROZEN: "var(--frozen)",
-  FREEZE_REQUESTED: "var(--frozen)",
-};
+export function TonePill({ tone, children }: { tone: Tone; children: ReactNode }) {
+  return <span className={`${s.status} ${s[`tone_${tone}`]}`}>{children}</span>;
+}
 
-export function StatusChip({ status }: { status: RunStatus }) {
+/** Round tinted status mark. One circle only: the glyph inside is a bare tick, shield or ice cube. */
+export function ToneIcon({ tone, size = 44 }: { tone: Tone; size?: number }) {
+  const g = Math.round(size * 0.56);
+  const glyph =
+    tone === "paid" ? (
+      <Check size={g} strokeWidth={2.75} />
+    ) : tone === "blocked" ? (
+      <ShieldX size={g} strokeWidth={2.25} />
+    ) : tone === "frozen" ? (
+      <IceCube size={g} />
+    ) : (
+      <TriangleAlert size={g} strokeWidth={2.25} />
+    );
   return (
-    <span className={s.chip} style={{ color: TONE[status] }}>
-      {status.replace(/_/g, " ")}
+    <span aria-hidden className={`${s.listIcon} ${s[`tone_${tone}`]}`} style={{ height: size, width: size }}>
+      {glyph}
     </span>
   );
 }
